@@ -1,0 +1,54 @@
+
+<!-- ***************************************************************************************-->
+	<style>
+	<!--
+	font span{ font-size:15px; color: green;}
+	-->
+	</style>
+		
+	<tr>
+		<td colspan="20" align="right" height="35px">
+			共&nbsp;
+			<font id="jsrpagecount">
+			<span id="totalSizeLinkman">0</span>
+			条记录&nbsp;
+			
+			共&nbsp;
+			<span id="totalPageLinkman">0</span>
+			</font>&nbsp;页&nbsp;&nbsp;当前第&nbsp;
+			<font id="jsrcurrentpage"><span id="pageNumberLinkman">1</span>
+			</font>&nbsp;页&nbsp;&nbsp;&nbsp;&nbsp;
+			
+			<img src="/crm/res/pages/frame/dataview/images/fy_dy.jpg" onclick="topage('tofirst')" style="cursor: pointer;" />
+			&nbsp;
+			<img src="/crm/res/pages/frame/dataview/images/fy_sy.jpg" onclick="changePage('last')" style="cursor: pointer;" />
+			&nbsp;
+			<img src="/crm/res/pages/frame/dataview/images/fy_xy.jpg" onclick="changePage('next')" style="cursor: pointer;" />
+			&nbsp;
+			<img src="/crm/res/pages/frame/dataview/images/fy_zh.jpg" onclick="topage('tolast')"; style="cursor: pointer;" />
+			每页显示
+			<input type="text" style="width: 25px" id="pageSizeLinkman"  onchange="jpageLinkman()" value="4" maxlength="3"/>			
+			&nbsp;&nbsp;&nbsp; 跳转到第&nbsp;
+			<select id="jpageNumberLinkman" onchange="tpageLinkman()" style="width: 40px;"> </select>
+			&nbsp;页
+		</td>
+	</tr>
+	<script type="text/javascript">
+	
+	// 加载分页信息
+	function loadpageLinkman(totalitem) {
+		var pageSize = $("#pageSizeLinkman").val(); // 每页显示多少条
+		var totalPage = totalitem % pageSize == 0 ? totalitem / pageSize : (Math.ceil(totalitem / pageSize)); // 总共多少页
+		$("#totalPageLinkman").text(totalPage);
+		$("#totalSizeLinkman").text(totalitem);
+		$("#jpageNumberLinkman").html("");
+		var ht = "";
+		for ( var k = 1; k <= totalPage; k++) {
+			ht += "<option value='" + k + "'>" + k + "</option>";
+		}
+		$("#jpageNumberLinkman").html(ht);
+		$("#jpageNumberLinkman").val($("#pageNumberLinkman").text());
+	}
+	</script>
+	
+<!-- ***************************************************************************************-->

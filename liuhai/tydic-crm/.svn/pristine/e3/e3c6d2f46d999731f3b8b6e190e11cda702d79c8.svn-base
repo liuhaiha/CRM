@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tydic.traffic.crm.dao.TCrmCustomerMapper">
+  <resultMap id="BaseResultMap" type="com.tydic.traffic.crm.entity.TCrmCustomer">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="cid" jdbcType="INTEGER" property="cid" />
+    <result column="cname" jdbcType="VARCHAR" property="cname" />
+    <result column="addr" jdbcType="VARCHAR" property="addr" />
+    <result column="region" jdbcType="VARCHAR" property="region" />
+    <result column="province" jdbcType="VARCHAR" property="province" />
+    <result column="resource" jdbcType="VARCHAR" property="resource" />
+    <result column="unit_type" jdbcType="VARCHAR" property="unitType" />
+    <result column="extend1" jdbcType="VARCHAR" property="extend1" />
+    <result column="extend2" jdbcType="VARCHAR" property="extend2" />
+    <result column="extend3" jdbcType="VARCHAR" property="extend3" />
+    <result column="extend4" jdbcType="VARCHAR" property="extend4" />
+    <result column="extend5" jdbcType="VARCHAR" property="extend5" />
+    <result column="extend6" jdbcType="VARCHAR" property="extend6" />
+    <result column="creator" jdbcType="VARCHAR" property="creator" />
+    <result column="createtime" jdbcType="TIMESTAMP" property="createtime" />
+    <result column="modifier" jdbcType="VARCHAR" property="modifier" />
+    <result column="modifytime" jdbcType="TIMESTAMP" property="modifytime" />
+  </resultMap>
+</mapper>

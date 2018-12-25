@@ -1,0 +1,43 @@
+{
+  "hints": [],
+  "groups": [
+    {
+      "sourceType": "com.tydic.traffic.crm.core.file.FileUploadProperties",
+      "name": "tafa.uploadFile",
+      "type": "com.tydic.traffic.crm.core.file.FileUploadProperties"
+    }
+  ],
+  "properties": [
+    {
+      "sourceType": "com.tydic.traffic.crm.core.file.FileUploadProperties",
+      "defaultValue": true,
+      "name": "tafa.uploadFile.enabled",
+      "description": "Enable support of multipart uploads.",
+      "type": "java.lang.Boolean"
+    },
+    {
+      "sourceType": "com.tydic.traffic.crm.core.file.FileUploadProperties",
+      "name": "tafa.uploadFile.file-size-threshold",
+      "description": "文件刷盘的阈值",
+      "type": "java.lang.Integer"
+    },
+    {
+      "sourceType": "com.tydic.traffic.crm.core.file.FileUploadProperties",
+      "name": "tafa.uploadFile.max-file-size",
+      "description": "允许上文件最大值",
+      "type": "java.lang.Integer"
+    },
+    {
+      "sourceType": "com.tydic.traffic.crm.core.file.FileUploadProperties",
+      "name": "tafa.uploadFile.store-location",
+      "description": "文件存放路径",
+      "type": "java.lang.String"
+    },
+    {
+      "sourceType": "com.tydic.traffic.crm.core.file.FileUploadProperties",
+      "name": "tafa.uploadFile.tmp-location",
+      "description": "上传时临时文件存放目录",
+      "type": "java.lang.String"
+    }
+  ]
+}

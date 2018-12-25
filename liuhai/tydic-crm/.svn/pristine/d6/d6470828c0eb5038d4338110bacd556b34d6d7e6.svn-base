@@ -1,0 +1,67 @@
+﻿server:
+    context-path: /crm
+    port: 8888
+    tomcat:
+      basedir: f:/Workspaces_new/tydic-crm-parent/tomcat
+      documentRoot: f:/Workspaces_new/tydic-crm-parent/tydic-crm-webapp/src/main/webapp
+logging:
+    config: classpath:logback-boot.xml
+spring:
+    http:
+        encoding:
+            charset: UTF-8
+        multipart:
+            enabled: false
+    jackson:
+           date-format: yyyy-MM-dd HH:mm:ss
+           timeZone: Asia/Shanghai
+    resources:
+           chain:
+                  enabled: true
+    mvc:
+        view:
+            prefix: /view/
+            suffix: .html
+            viewClass: org.springframework.web.servlet.view.JstlView
+jasypt:
+    encryptor:
+      password: 123456
+
+#分页配置
+pagehelper:
+    #分页时需要返回总页数据及总行数 isCount = true为需要返回，expireAfterAccess总数缓存时间(单位秒，距最后一次访问时间)，maximumSize可缓存的记录数
+    count:
+        isCount: true
+        expireAfterAccess: 10
+        maximumSize: 1000
+    #如果输入非法则默认但第一页 
+    defaultPageNo: 1
+    #如果如果输入非法则默认页大小
+    defaultPageSize: 10
+
+## tkMapperHelper设置
+tkMapperHelper:
+    mappers: com.tydic.traffic.tafa.daf.mybatis.tk.common.Mapper
+
+## crm 数据源配置
+crm:
+    datasource:
+        url: jdbc:mysql://localhost:3306/tydic-crm?useUnicode=true&characterEncoding=utf8
+        username: root
+        password: root
+        driverClassName: com.mysql.jdbc.Driver
+
+### tafa框架核心配置
+tafa:
+    validation:
+       excludePackages: org.springframework,springfox
+    core:
+       skipClassNames: org.mybatis.spring.boot.autoconfigure.MybatisAutoConfiguration,org.springframework.boot.autoconfigure.validation.ValidationAutoConfiguration
+
+### 上传文件路径
+uploadurl:
+    #linux 
+    #crm.uploadurl: /usr/local/crmfile
+    #window
+    #crm.uploadurl: D:/crmfile  
+

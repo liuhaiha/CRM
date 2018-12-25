@@ -1,0 +1,479 @@
+var layer;
+layui.use([ 'form', 'layedit', 'laydate' ],
+				function() {
+					var form = layui.form(), layer = layui.layer, layedit = layui.layedit, laydate = layui.laydate;
+
+					// 监听提交
+					form.on('submit(save)', function(data) {
+						layer.msg(JSON.stringify(data.field));
+						return false;
+					});
+				});
+$(function(){
+	getRoleByPage();
+})
+$(function(){
+    $("#first_page").click(function(){
+    	if(Number($('#pageNo').val()) == 1){
+			layer.msg("已经是第一页了");
+		}else{
+			getRoleByPage(1);
+			layer.msg('第一页');
+		}
+    })
+
+    $("#pre_page").click(function(){
+    	if(Number($('#pageNo').val()) == 1){
+			layer.msg("已经是第一页了");
+		}else{
+			getRoleByPage(Number($('#pageNo').val()) - 1);
+			layer.msg('第'+ (Number($('#pageNo').val()) - 1)+'页');
+		}
+    })
+
+    $("#next_page").click(function(){
+    	if(Number($('#pageNo').val()) == Number($('#totalPage').val())){
+			layer.msg("已经是最后一页了");
+		}else{
+			getRoleByPage(Number($('#pageNo').val()) + 1);
+			layer.msg('第'+ (Number($('#pageNo').val()) + 1) +'页');
+		}
+    })
+
+    $("#last_page").click(function(){
+    	if(Number($('#pageNo').val()) == Number($('#totalPage').val())){
+			layer.msg("已经是最后一页了");
+		}else{
+			getRoleByPage(Number($('#totalPage').val()));
+			layer.msg('最后一页');
+		}
+    })
+});
+
+//获取创建人信息
+$(function getCreater(){
+	$.ajax({
+		url:'/crm/role/getCreater',
+		method:'get',
+		dataType:'json',
+		async:true,
+		success:function(result){
+			var str = "";
+			var beginstr = "<option value = ''>--请选择--</option>";
+			str = beginstr + str;
+			for(i in result){
+				str = str + "<option value = '" + result[i].ename + "'>"+ result[i].ename + "</option>";
+			}
+			$("#creator").html(str);
+			$("#modifier").html(str);
+		},
+		error:function(XMLHttpRequest, textStatus, errorThrown){
+			layer.msg("创建人列表获取失败",{offset:'40%'});
+		}
+	});
+});
+//保存角色
+//打开保存页
+function addRolePage() {
+	layer.open({
+		type : 1,
+		title : '添加角色', //不显示标题栏
+		shade : false,
+		content : $('#addRole'),
+		shade : false,
+		shadeClose : false,
+	});
+	$("#rname").val("");
+	$("#rdesc").val("");
+}
+
+function addRole(){
+	var tSysRole = {};
+	tSysRole.rname = $("#rname").val();
+	if(tSysRole.rname == "" || tSysRole.rname == null){
+		layer.msg("请填写角色名称");
+	}
+	tSysRole.rdesc = $("#rdesc").val();
+ 	$.ajax({
+		url:'/crm/role/saveTSysRole',
+		method:'post',
+		dataType:'json',
+		data:tSysRole,
+		async:true,
+		success:function(result){
+			if(result != "" && result != null){
+				layer.closeAll();
+				layer.msg("保存成功",{offset:'40%'});
+                getRoleByPage();
+			}else{
+				layer.msg("保存失败",{offset:'40%'});
+			}
+		}
+	});
+}
+//获取角色(未分页)
+// function getRole(){
+// 	$.ajax({
+// 		url:'/crm/role/getRole',
+// 		method:'get',
+// 		dataType:'json',
+// 		asyn:true,
+// 		success:function(result){
+// 			if(result != null && result != ""){
+// 				$("#roleTable").html(listTSysRole(result));
+// 			}else{
+// 				layer.msg("角色列表获取失败",{offset:'40%'});
+// 			}
+//
+// 		}
+// 	});
+// }
+
+//获取角色列表（分页）
+var pageNumber = parseInt($("#pageNumber").text() == ""?"1":$("#pageNumber").text());
+var pageSize = $("#pageSize").val() == undefined?"10":$("#pageSize").val();
+var totalPage = 0;
+//var pageNumber = 1;
+//var pageSize = 8;
+//var totalPage = 0;
+//显示客户联系人表格数据
+function getRoleByPage(pageNumber)
+{
+    $.ajax({
+        type     : 'POST',
+        url      : '/crm/role/getRoleByPage',
+        dataType : 'json',
+        data     : {"pageNumber":pageNumber, "pageSize":pageSize},
+        async    : true,
+        success  : function(result) {
+        	if(result.results.length == 0){
+        		$("#roleTable").html("<tr><td colspan='8' style='font-size:14px;text-align:center;' >没有数据</td></tr>");
+        	}else{
+        		$("#pageNo").val(result.pageNo);
+        		$("#totalPage").val(result.totalPage);
+        		totalPage = result.totalPage;
+        		$("#roleTable").html(listTSysRole(result.results));
+        		$("#roleTable").delegate("tr","mouseenter",function(){
+        			$(this).css("background-color","#FDE5B2")
+        			$(this).siblings().css("background-color","#fff")
+        			});
+        		
+        		loadpageList(result.totalSize);
+    			$("#totalSizePro").html(result.totalSize);
+    		    $("#totalPagePro").html(result.totalPage);
+        	}
+        },error:function () {
+
+        }
+    });
+}
+/**
+ *  <button class='layui-btn layui-btn-small layui-btn-radius layui-btn-danger' onclick='roleEditor(this)'>编辑</button> 
+ *  <button class='layui-btn layui-btn-small layui-btn-radius' onclick='roleDelete()'>删除</button>
+ * @param role
+ * @returns
+ */
+function listTSysRole(role) {
+	var str = "";
+	for(var i in role){
+		var createtime = role[i].createtime==undefined?'':role[i].createtime;
+		var modifytime = role[i].modifytime==undefined?'':role[i].modifytime;
+		str = str + "<tr style='font-size: 14px; height: 35px;' id = 'role"+ role[i].rid + "'>"
+		+ "<th style='font-size: 14px;'><input name='listrole' type='checkbox' value='"+ role[i].rid + "'></th>"
+		+ "<th style='font-size: 14px;'>" + role[i].rname+ "</th>" 
+		+ "<th style='font-size: 14px;'>" + role[i].rdesc + "</th>"
+		+ "<th style='font-size: 14px;'>" + role[i].creator + "</th>"
+		+ "<th style='font-size: 14px;'>" + createtime + "</th>"
+		+ "<th style='font-size: 14px;'>" + role[i].modifier + "</th>"
+		+ "<th style='font-size: 14px;'>" + modifytime + "</th>"
+		+ "<th><button style = 'width:60%' class='layui-btn layui-btn-small layui-btn-radius layui-btn-normal' onclick='rolePermission("+role[i].rid+")'>授权</button></th>" 
+		+ "</tr>";
+	}
+	return str;
+}
+
+//跳转到首页和末页
+function topagepro(topge) {
+	if( $("#totalPagePro").text()==0 ){
+		return;
+	}
+	if (topge == "tofirst") {
+		$("#pageNumberPro").html(1);
+		pageNumber = 1;
+	} else if (topge == "tolast") {
+		$("#pageNumberPro").html(parseInt($("#totalPagePro").text()));
+		pageNumber = totalPage;
+	}
+	
+	getRoleByPage(pageNumber);
+}
+
+//上页 下页点击事件
+function changePagepro(obj) {
+	if( $("#totalPagePro").text()==0 ){
+		return;
+	}
+	var pageNumberPro = parseInt($("#pageNumberPro").text());
+	var totalPagePro = parseInt($("#totalPagePro").text());
+	if (obj == "next") {
+		if (pageNumberPro < totalPagePro) {
+			pageNumberPro = parseInt(pageNumberPro) + 1;
+		} else if (pageNumberPro < totalPagePro) {
+			pageNumberPro = 1;
+		}
+	} else if (obj == "last") {
+		if (pageNumberPro <= totalPagePro && pageNumberPro > 1) {
+			pageNumberPro = (pageNumberPro - 1);
+		}
+	}
+	$("#pageNumberPro").text(pageNumberPro);
+	getRoleByPage(pageNumberPro);
+}
+
+//跳转到某一页
+function tpagePro() {
+	var tpnum = $("#jpageNumberPro option:selected").text();
+	$("#pageNumberPro").text(tpnum);
+	getRoleByPage(tpnum);
+}
+
+//每页显示数
+function jpagePro() {
+	getRoleByPage(parseInt($("#pageNumber").text()));
+}
+
+//根据条件查询角色信息
+function searchRole(){
+	var rname = $("#rolename").val();
+	var rdesc = $("#roledesc").val();
+	var creator = $("#creator").val();
+	var beginDate = $("#beginDate").val();
+	var endDate = $("#endDate").val();
+	var modifier = $("#modifier").val();
+	$.ajax({
+        type     : 'POST',
+        url      : '/crm/role/getRoleByPage',
+        dataType : 'json',
+        data     : {"pageNumber":pageNumber, "pageSize":pageSize,"rname":rname,"rdesc":rdesc,"creator":creator,"beginDate":beginDate,"endDate":endDate,"modifier":modifier},
+        async    : true,
+        success  : function(result) {
+        	if(result.results.length == 0){
+        		$("#roleTable").html("<tr><td colspan='8' style='font-size:14px;text-align:center;' >没有数据</td></tr>");
+        	}else{
+        		$("#pageNo").val(result.pageNo);
+        		$("#totalPage").val(result.totalPage);
+        		totalPage = result.totalPage;
+        		$("#roleTable").html(listTSysRole(result.results));
+        	}
+        },error:function () {
+
+        }
+    });
+}
+
+//编辑选中角色
+function editRolePage() {
+	var checkArray = $("input[name='listrole']:checked");
+	if (checkArray.length == 0) {
+		layer.msg("请选择要修改的角色", {offset : '40%'});
+		return;
+	}
+	if (checkArray.length > 1) {
+		layer.msg("不能同时编辑多个角色信息", {offset : '40%'});
+	}
+	var checkid = $(checkArray[0]).val();
+	if (checkArray.length == 1) {
+		layer.open({
+			type : 1, // Page层类型
+			title : '请填写需要修改的信息',
+			shade : false, // 遮罩透明度
+			shadeClose : false,
+			content : $('#editRolePage'),
+			offset : '30%'
+		});
+		$.ajax({
+			url : '/crm/role/editRoleInfo',
+			async : true,
+			type : 'post',
+			data : {
+				"checkid" : checkid
+			},
+			dataType : 'json',
+			timeout : 60000,
+			success : function(result) {
+				$("#editrname").val(result.rname);
+				$("#editrdesc").val(result.rdesc);
+			},
+			error : function() {
+			}
+		});
+	}
+}
+function editRole() {
+	var tSysRole = {};
+	var checkArray = $("input[name='listrole']:checked");
+	var checkid = $(checkArray[0]).val();
+	tSysRole.rid = checkid;
+	tSysRole.rname = $("#editrname").val();
+	if (tSysRole.rname == "") {
+		layer.msg("请填写角色名称", {offset : '40%'});
+		return;
+	}
+	tSysRole.rdesc = $("#editrdesc").val();
+	$.ajax({
+		url : '/crm/role/editRole',
+		async : true,
+		type : 'POST',
+		dataType : 'json',
+		data : tSysRole,
+		timeout : 60000,
+		success : function(result) {
+			layer.closeAll();
+			if(result.code == "1"){
+				layer.msg("修改成功", {offset : '40%'});
+                getRoleByPage(Number($('#pageNo').val()));
+			}
+			else{
+				layer.msg("修改失败",{offset:'40%'});
+			}
+		},
+		error : function() {
+		}
+	});
+}
+
+//删除选中角色
+function delRole() {
+	var checkids = "";
+	var checkArray = $("input[name='listrole']:checked");
+	if (checkArray.length == 0) {
+		layer.msg("请选择要删除的角色", {offset : '40%'});
+		return;
+	}
+	for (var i = 0, len = checkArray.length; i < len; i++) {
+		checkids += $(checkArray[i]).val();
+		if (i != len - 1) {
+			checkids += ",";
+		}
+	}
+	layer.confirm('确认删除?', {
+		title : '',
+		btn : [ '确认', '取消' ],
+		offset : '40%',
+		btn1 : function(index, layerno) {
+			$.ajax({
+				async : true,
+				type : 'POST',
+				url : '/crm/role/delRole',
+				data : {
+					"checkids" : checkids
+				},
+				dataType : 'json',
+				timeout : 60000,
+				success : function(result) {
+					if (result.code == "1") {
+						layer.msg("删除成功", {offset : '40%'});
+                        getRoleByPage(Number($('#pageNo').val()));
+					} else {
+						layer.msg('删除失败,请联系系统管理员', {offset : '40%'});
+					}
+				},
+				error : function(XMLHttpRequest, textStatus, errorThrown) {
+					alert('系统错误,请联系系统管理员');
+					return false;
+				}
+			});
+		}
+	})
+}
+
+// 授权管理
+var treeId = 0;
+var level = 0;
+var pcode = "001";
+var code = "001";
+function rolePermission(id) {
+	$('#permissionTree').empty();
+	layui.use('tree', function() {
+		$.ajax({
+			type     : 'GET',
+			url      : '/crm/role/getRoleList',
+			dataType : 'json',
+			data     : {"rid":id},
+			async    : false,
+			success  : function(result) {
+				layui.tree({
+					elem: '#permissionTree', //传入元素选择器
+					check:'checkbox',
+					drag:true,
+					checkboxName:'checkTree',
+					click: function(item) {
+						treeId = item.id;
+						level = item.level;
+						pcode = item.pcode;
+						code = item.code;
+					},nodes: result
+				});
+				layer.open({
+					type : 1, // Page层类型
+					title : '请选择权限',
+					content : $('#rolePermission'),
+					area:['300px','300px'],
+					shade : 0.2, // 遮罩透明度
+					offset : '30%',
+					shadeClose : false,
+					btn:['授权','取消'],
+					yes: function(index, layero){
+						var permissionCheckIds = "";
+						var permissionCheckIdArray = $("input[name='checkTree']:checked");
+//						for(var i = 0, len = permissionCheckIdArray.length; i < len; i++){
+//							if(permissionCheckIdArray[i].val() == ){
+//								
+//							}
+//						}
+//						if (permissionCheckIdArray.length == 0) {
+//							layer.confirm('请确定是否无授权?', {
+//								title : '',
+//								btn : [ '确认', '取消' ],
+//								offset : '40%',
+//								btn1 : function(index, layerno) {
+//									layer.closeAll();
+//								}
+//							});
+//						}
+						for (var i = 0, len = permissionCheckIdArray.length; i < len; i++) {
+							permissionCheckIds += $(permissionCheckIdArray[i]).val();
+							if (i != len - 1) {
+								permissionCheckIds += ",";
+							}
+						}
+						var rid = id;
+						$.ajax({
+							url:'/crm/role/permissionManager',
+							method:'post',
+							dataType:'json',
+							data:{
+								"permissionCheckIds":permissionCheckIds,
+								"rid": rid
+							},
+							async:true,
+							success:function(result){
+								if(result.code == "1"){
+									layer.msg("授权成功",{offset:'40%'});
+								}else{
+									layer.msg("授权失败",{offset:'40%'});
+								}
+							},error:function(){
+								
+							}
+						});
+						layer.closeAll();
+					},
+					cancel:function(index, layero){
+						layer.closeAll();
+					}
+				});
+			},error:function(){}
+		});
+	});
+}

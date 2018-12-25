@@ -1,0 +1,16 @@
+com\tydic\traffic\crm\dao\TCrmWorklogMapper.class
+com\tydic\traffic\crm\service\TCrmWorklogService.class
+com\tydic\traffic\crm\vo\TCrmWorklogVo.class
+com\tydic\traffic\crm\service\TCrmLogService.class
+com\tydic\traffic\crm\dao\TCrmLogItemMapper.class
+com\tydic\traffic\crm\dao\TCrmWorkdeskMapper.class
+com\tydic\traffic\crm\controller\LogController.class
+com\tydic\traffic\crm\service\impl\TCrmworkdeskImpl.class
+com\tydic\traffic\crm\service\impl\TCrmLogServiceImpl$1.class
+com\tydic\traffic\crm\service\TCrmworkdeskService.class
+com\tydic\traffic\crm\service\impl\TCrmWorklogServiceImpl.class
+com\tydic\traffic\crm\service\impl\TCrmLogServiceImpl.class
+com\tydic\traffic\crm\controller\WorkdeskController.class
+com\tydic\traffic\crm\vo\TCrmLogVo.class
+com\tydic\traffic\crm\dao\TCrmLogMapper.class
+com\tydic\traffic\crm\controller\WorklogController.class

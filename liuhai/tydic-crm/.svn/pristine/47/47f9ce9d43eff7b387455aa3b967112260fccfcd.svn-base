@@ -1,0 +1,329 @@
+/*
+ * 文 件 名:  UserController.java
+ * 版    权:   Tydic Copyright 2018,  All rights reserved
+ * 描    述:  <描述>
+ * 创 建 人:  wlhuang
+ * 修 改 人:  
+ * 修改时间:  
+ * 修改内容:  <修改内容>
+ */
+package com.tydic.traffic.crm.controller;
+
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.util.List;
+import java.util.Random;
+
+import javax.imageio.ImageIO;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import org.apache.ibatis.annotations.Param;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.tydic.traffic.crm.constant.Constant;
+import com.tydic.traffic.crm.entity.TSysUser;
+import com.tydic.traffic.crm.entity.TSysUserRefRole;
+import com.tydic.traffic.crm.service.SysUserService;
+import com.tydic.traffic.crm.utils.CommonUtil;
+import com.tydic.traffic.crm.vo.PermissMenu;
+import com.tydic.traffic.crm.vo.SysUserVo;
+import com.tydic.traffic.crm.vo.UserInfo;
+import com.tydic.traffic.tafa.web.JsonResult;
+
+/**
+ * 
+ * UserController
+ * @desc 用户处理类
+ * @author wlhuang
+ * @version V1.0 2018年7月21日
+ * @since V1.0
+ */
+@Controller
+@RequestMapping("/user")
+public class UserController extends BaseController
+{
+	@Autowired
+	private SysUserService sysUserService;
+	
+	/**
+	 * 登录
+	 * @param uname 用户名
+	 * @param upass 密码
+	 * @param checkcode 验证码
+	 * @return
+	 */
+	@RequestMapping("/login")
+	@ResponseBody
+	public int login(@Param("uname") String uname,
+			@Param("upass") String upass, @Param("checkcode") String checkcode)
+	{
+		String authcode = CommonUtil.replaceNullStr(request.getSession().getAttribute(Constant.AUTH_CODE));
+		if (CommonUtil.isNull(checkcode) || !checkcode.toLowerCase().equals(authcode))
+		{
+			return 0;
+		}
+		
+		TSysUser user = new TSysUser();
+		user.setUname(uname);
+		user.setUpass(upass);
+		
+		UserInfo dbUser = sysUserService.login(user);
+		request.getSession().setMaxInactiveInterval(60 * 60);
+		request.getSession().setAttribute(Constant.AUTH_USER, dbUser);
+		return null == dbUser?-1:dbUser.getUstatus();
+	}
+	
+	/**
+	 * 个人帐号信息
+	 * @return
+	 */
+	@RequestMapping("/userinfo")
+	@ResponseBody
+	public JsonResult userinfo()
+	{
+		UserInfo user = super.getUser();
+		JsonResult result = new JsonResult();
+		result.setCode("1");
+		if (null == user)
+		{
+			result.setCode("-1");
+		}
+		result.setData(user);
+		return result;
+	}
+	
+	/**
+	 * 注销
+	 * @return
+	 */
+	@RequestMapping("/logout")
+	public String logout()
+	{
+		request.getSession().removeAttribute(Constant.AUTH_USER);
+		return "redirect:/login.html";
+	}
+	
+	/**
+	 * 跳转到修改密码页面
+	 * @return
+	 */
+	@RequestMapping("/toChangePwd")
+	public String toEmpInfo()
+	{
+		return "personal/password/changePwd";
+	}
+	
+	/**
+	 * 修改密码
+	 * @param upass 当前密码
+	 * @param newpass 新密码
+	 * @return
+	 */
+	@RequestMapping("/changePwd")
+	@ResponseBody
+	public JsonResult login(@Param("upass") String upass,
+			@Param("newpass") String newpass)
+	{
+		JsonResult result = new JsonResult();
+		TSysUser user = super.getUser();
+		user.setUpass(upass);
+		int resultCode = sysUserService.updatePwd(user, newpass);
+		result.setCode(resultCode + "");
+		return result;
+	}
+	
+	/**
+	 * 分配帐号
+	 * @param eid 员工
+	 * @param uname 帐号
+	 * @param upass 密码
+	 * @param roleids 角色列表ID,以','分割
+	 * @return
+	 */
+	@RequestMapping("/aggsign")
+	@ResponseBody
+	public JsonResult aggsign(@ModelAttribute("user") SysUserVo userVo)
+	{
+		JsonResult result = new JsonResult();
+		TSysUser user = super.getUser();
+		if (null != user)
+		{
+			userVo.setCreator(user.getUname());
+		}
+			
+		boolean aggsignResult = sysUserService.aggsign(userVo);
+		result.setCode(aggsignResult?"1":"-1");
+		return result;
+	}
+	
+	@RequestMapping("/lock")
+	@ResponseBody
+	public JsonResult lock(@ModelAttribute("user") TSysUser tSysUser)
+	{
+		JsonResult result = new JsonResult();
+		TSysUser user = super.getUser();
+		if (null != user)
+		{
+			tSysUser.setModifier(user.getUname());
+		}
+		tSysUser.setUstatus(Constant.USER_STATUS_LOCK);
+		boolean lockResult = sysUserService.chageStatus(tSysUser);
+		result.setCode(lockResult?"1":"-1");
+		return result;
+	}
+	
+	@RequestMapping("/unlock")
+	@ResponseBody
+	public JsonResult unlock(@ModelAttribute("user") TSysUser tSysUser)
+	{
+		JsonResult result = new JsonResult();
+		TSysUser user = super.getUser();
+		if (null != user)
+		{
+			tSysUser.setModifier(user.getUname());
+		}
+		tSysUser.setUstatus(Constant.USER_STATUS_NORMAL);
+		boolean lockResult = sysUserService.chageStatus(tSysUser);
+		result.setCode(lockResult?"1":"-1");
+		return result;
+	}
+	
+	/**
+	 * 重置密码
+	 * @param upass 当前密码
+	 * @param newpass 新密码
+	 * @return
+	 */
+	@RequestMapping("/resetPwd")
+	@ResponseBody
+	public JsonResult resetPwd(@ModelAttribute("user") TSysUser tSysUser)
+	{
+		JsonResult result = new JsonResult();
+		TSysUser user = super.getUser();
+		if (null != user)
+		{
+			tSysUser.setModifier(user.getUname());
+		}
+		tSysUser.setUpass(Constant.USER_PASS_DEF);
+		boolean resetResult = sysUserService.resetPwd(tSysUser);
+		result.setCode(resetResult?"1":"-1");
+		return result;
+	}
+	
+	/**
+	 * 重置密码
+	 * @param upass 当前密码
+	 * @param newpass 新密码
+	 * @return
+	 */
+	@RequestMapping("/queryRefRole")
+	@ResponseBody
+	public JsonResult queryRefRole(@Param("uid") Integer uid)
+	{
+		JsonResult result = new JsonResult();
+		
+		List<TSysUserRefRole> roleList = sysUserService.queryRefRole(uid);
+		result.setCode(null == roleList?"-1":"1");
+		result.setData(roleList);
+		return result;
+	}
+	
+	
+	@RequestMapping("/grant")
+	@ResponseBody
+	public JsonResult grant(@Param("uid") Integer uid, @Param("roleids") String roleids)
+	{
+		JsonResult result = new JsonResult();
+		boolean grantResult = sysUserService.grant(uid, roleids);
+		result.setCode(grantResult?"1":"-1");
+		return result;
+	}
+	
+	@RequestMapping("/queryMenu")
+	@ResponseBody
+	public List<PermissMenu> queryMenu()
+	{
+		UserInfo user = super.getUser();
+		List<PermissMenu> menuList = null;
+		if (null != user)
+		{
+			menuList = sysUserService.queryPerMenu(user.getPerCodeList());
+		}
+
+		return menuList;
+	}
+	
+	/**
+	 * 生成验证码
+	 * @param request
+	 * @param response
+	 * @throws IOException
+	 */
+	@RequestMapping("/code")
+	public void getCode(HttpServletRequest request, HttpServletResponse response)
+			throws IOException {
+		HttpSession session = request.getSession();
+		int width = 87;
+		int height = 38;
+		Random random = new Random();
+		response.setHeader("Pragma", "No-cache");
+		response.setHeader("Cache-Control", "no-cache");
+		response.setDateHeader("Expires", 0);
+
+		BufferedImage image = new BufferedImage(width, height, 1);
+		Graphics g = image.getGraphics();
+		g.setColor(this.getColor(200, 250));
+		g.setFont(new Font("Times New Roman", 0, 28));
+		g.fillRect(0, 0, width, height);
+		for (int i = 0; i < 40; i++) {
+			g.setColor(this.getColor(130, 200));
+			int x = random.nextInt(width);
+			int y = random.nextInt(height);
+			int x1 = random.nextInt(12);
+			int y1 = random.nextInt(12);
+			g.drawLine(x, y, x + x1, y + y1);
+		}
+
+		String strCode = "";
+		for (int i = 0; i < 4; i++) {
+			String rand = String.valueOf(codeSequence[random
+					.nextInt(codeSequence.length)]);
+			strCode = strCode + rand;
+			g.setColor(new Color(20 + random.nextInt(110), 20 + random
+					.nextInt(110), 20 + random.nextInt(110)));
+			g.drawString(rand, 13 * i + 15, 28);
+		}
+		session.setAttribute(Constant.AUTH_CODE, strCode.toLowerCase());
+		g.dispose();
+
+		ImageIO.write(image, "JPEG", response.getOutputStream());
+		response.getOutputStream().flush();
+	}
+	
+	
+	private Color getColor(int fc, int bc) {
+		Random random = new Random();
+		if (fc > 255)
+			fc = 255;
+		if (bc > 255)
+			bc = 255;
+		int r = fc + random.nextInt(bc - fc);
+		int g = fc + random.nextInt(bc - fc);
+		int b = fc + random.nextInt(bc - fc);
+		return new Color(r, g, b);
+	}
+	
+	private char[] codeSequence = { '0', '1', '2', '3', '4', '5',  '6', '7',  '8', '9'
+			, 'q','a','z','w','s','x','e','d','c','r','f','v','t','g','b','y','h','n','u','j','m','i','k','o','l','p'
+			, 'Q','A','Z','W','S','X','E','D','C','R','F','V','T','G','B','Y','H','N','U','J','M','I','K','O','L','P'
+			};
+}

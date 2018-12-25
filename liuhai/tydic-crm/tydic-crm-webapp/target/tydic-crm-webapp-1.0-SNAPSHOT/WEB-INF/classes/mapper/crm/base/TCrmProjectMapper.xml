@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tydic.traffic.crm.dao.TCrmProjectMapper">
+  <resultMap id="BaseResultMap" type="com.tydic.traffic.crm.entity.TCrmProject">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="pid" jdbcType="INTEGER" property="pid" />
+    <result column="cid" jdbcType="INTEGER" property="cid" />
+    <result column="short_name" jdbcType="VARCHAR" property="shortName" />
+    <result column="full_name" jdbcType="VARCHAR" property="fullName" />
+    <result column="stage" jdbcType="VARCHAR" property="stage" />
+    <result column="decisioner" jdbcType="VARCHAR" property="decisioner" />
+    <result column="operator" jdbcType="VARCHAR" property="operator" />
+    <result column="est_begintime" jdbcType="TIMESTAMP" property="estBegintime" />
+    <result column="est_endtime" jdbcType="TIMESTAMP" property="estEndtime" />
+    <result column="act_begintime" jdbcType="TIMESTAMP" property="actBegintime" />
+    <result column="act_endtime" jdbcType="TIMESTAMP" property="actEndtime" />
+    <result column="business_leader_no" jdbcType="VARCHAR" property="businessLeaderNo" />
+    <result column="business_leader_name" jdbcType="VARCHAR" property="businessLeaderName" />
+    <result column="presale_leader_no" jdbcType="VARCHAR" property="presaleLeaderNo" />
+    <result column="presale_leader_name" jdbcType="VARCHAR" property="presaleLeaderName" />
+    <result column="deliver_leader_no" jdbcType="VARCHAR" property="deliverLeaderNo" />
+    <result column="deliver_leader_name" jdbcType="VARCHAR" property="deliverLeaderName" />
+    <result column="est_money" jdbcType="REAL" property="estMoney" />
+    <result column="crm_project_desc" jdbcType="VARCHAR" property="crmProjectDesc" />
+    <result column="extend1" jdbcType="VARCHAR" property="extend1" />
+    <result column="extend2" jdbcType="VARCHAR" property="extend2" />
+    <result column="extend3" jdbcType="VARCHAR" property="extend3" />
+    <result column="extend4" jdbcType="VARCHAR" property="extend4" />
+    <result column="extend5" jdbcType="VARCHAR" property="extend5" />
+    <result column="extend6" jdbcType="VARCHAR" property="extend6" />
+    <result column="extend7" jdbcType="VARCHAR" property="extend7" />
+    <result column="extend8" jdbcType="VARCHAR" property="extend8" />
+    <result column="extend9" jdbcType="VARCHAR" property="extend9" />
+    <result column="extend10" jdbcType="VARCHAR" property="extend10" />
+    <result column="creator" jdbcType="VARCHAR" property="creator" />
+    <result column="createtime" jdbcType="TIMESTAMP" property="createtime" />
+    <result column="modifier" jdbcType="VARCHAR" property="modifier" />
+    <result column="modifytime" jdbcType="TIMESTAMP" property="modifytime" />
+    <result column="is_delete" jdbcType="VARCHAR" property="isDelete" />
+  </resultMap>
+  
+  <select id="queryProjectList" resultType="com.tydic.traffic.crm.vo.TCrmProjectVo">
+     	select pid, cid, short_name as shortName, stage, decisioner, act_begintime as actBegintime, act_endtime as actEndtime,
+     	business_leader_name as businessLeaderName, est_money as estMoney from t_crm_project order by modifytime desc ,createtime desc
+  </select>
+  
+  <select id="queryProjectListById" resultType="com.tydic.traffic.crm.vo.TCrmProjectVo" parameterType="com.tydic.traffic.crm.vo.TCrmProjectVo">
+     	select pid, cid, short_name as shortName, stage, decisioner, act_begintime as actBegintime, act_endtime as actEndtime,
+     	business_leader_name as businessLeaderName, est_money as estMoney from t_crm_project
+     	<if test="cid !=null and cid!=0">
+			where cid=#{cid}
+		</if>
+		and is_delete is null
+		order by modifytime desc ,createtime desc
+  </select>
+  
+</mapper>

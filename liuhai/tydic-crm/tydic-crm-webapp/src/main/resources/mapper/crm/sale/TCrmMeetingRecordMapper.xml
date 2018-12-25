@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tydic.traffic.crm.dao.TCrmMeetingRecordMapper">
+  <resultMap id="BaseResultMap" type="com.tydic.traffic.crm.entity.TCrmMeetingRecord">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="cid" jdbcType="INTEGER" property="cid" />
+    <result column="pid" jdbcType="INTEGER" property="pid" />
+    <result column="aid" jdbcType="INTEGER" property="aid" />
+    <result column="theme" jdbcType="VARCHAR" property="theme" />
+    <result column="mtime" jdbcType="TIMESTAMP" property="mtime" />
+    <result column="maddr" jdbcType="VARCHAR" property="maddr" />
+    <result column="peer" jdbcType="VARCHAR" property="peer" />
+    <result column="customers" jdbcType="VARCHAR" property="customers" />
+    <result column="thirdMan" jdbcType="VARCHAR" property="thirdman" />
+    <result column="recordno" jdbcType="VARCHAR" property="recordno" />
+    <result column="recordname" jdbcType="VARCHAR" property="recordname" />
+    <result column="process" jdbcType="VARCHAR" property="process" />
+    <result column="summary" jdbcType="VARCHAR" property="summary" />
+    <result column="next_plan" jdbcType="VARCHAR" property="nextPlan" />
+    <result column="fileno" jdbcType="INTEGER" property="fileno" />
+    <result column="creator" jdbcType="VARCHAR" property="creator" />
+    <result column="createtime" jdbcType="TIMESTAMP" property="createtime" />
+    <result column="modifier" jdbcType="VARCHAR" property="modifier" />
+    <result column="modifytime" jdbcType="TIMESTAMP" property="modifytime" />
+    <result column="is_delete" jdbcType="VARCHAR" property="isDelete" />
+  </resultMap>
+  
+  	<!-- 查询账号 -->
+	<select id="queryPeerName" parameterType="java.util.HashMap" resultType="java.lang.String">
+		select ename from t_sys_employee
+		where eno in 
+		<foreach open="(" separator="," close=")" item="item" collection="eno">
+			#{item}
+		</foreach>
+	</select>
+	
+	<select id="queryPeerNameList" parameterType="java.util.HashMap" resultType="com.tydic.traffic.crm.entity.TSysEmployee">
+		select eno, ename from t_sys_employee
+		where eno in 
+		<foreach open="(" separator="," close=")" item="item" collection="eno">
+			#{item}
+		</foreach>
+	</select>
+  	
+  	<select id="queryMeetingListByCid" resultType="com.tydic.traffic.crm.entity.TCrmMeetingRecord" parameterType="java.lang.Integer">
+     	select id, theme, maddr, peer, customers, thirdMan, recordname, fileno, mtime from t_crm_meeting_record
+     	<if test="cid !=null and cid != 0">
+			where cid=#{cid}
+		</if>
+		and is_delete is null
+		order by modifytime desc
+  	</select>
+  	
+  	<select id="queryLinkmanListByPid" resultType="com.tydic.traffic.crm.entity.TCrmMeetingRecord" parameterType="java.lang.Integer">
+     	select id, theme, maddr, peer, customers, thirdMan, recordname, fileno, mtime from t_crm_meeting_record
+     	<if test="cid !=null and cid != 0">
+			where cid = #{cid}
+		</if>
+     	<if test="pid !=null and pid != 0">
+			and pid = #{pid}
+		</if>
+		and is_delete is null
+		order by modifytime desc
+  	</select>
+</mapper>

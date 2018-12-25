@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?><project-modules id="moduleCoreId" project-version="1.5.0">
+    <wb-module deploy-name="tydic-duty-webapp">
+        <wb-resource deploy-path="/" source-path="/target/m2e-wtp/web-resources"/>
+        <wb-resource deploy-path="/" source-path="/src/main/webapp" tag="defaultRootSource"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/java"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/resources"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/webapp"/>
+        <dependent-module archiveName="tafa-web-1.0-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/tafa-web/tafa-web">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="tafa-cache-1.0-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/tafa-cache/tafa-cache">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="tafa-core-1.0-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/tafa-core/tafa-core">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="tafa-daf-1.0-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/tafa-daf/tafa-daf">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="tydic-crm-personal-1.0-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/tydic-crm-personal/tydic-crm-personal">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="tydic-crm-common-1.0-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/tydic-crm-common/tydic-crm-common">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="tafa-common-utils-1.0-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/tafa-common-utils/tafa-common-utils">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="tydic-crm-codeunit-1.0-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/tydic-crm-codeunit/tydic-crm-codeunit">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="tydic-crm-core-1.0-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/tydic-crm-core/tydic-crm-core">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="tafa-common-validation-1.0-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/tafa-common-validation/tafa-common-validation">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="tafa-exception-1.0-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/tafa-exception/tafa-exception">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="tydic-crm-sys-1.0-SNAPSHOT.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/tydic-crm-sys/tydic-crm-sys">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <property name="java-output-path" value="/tydic-duty-webapp/target/classes"/>
+        <property name="context-root" value="tydic-crm-webapp"/>
+    </wb-module>
+</project-modules>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE generatorConfiguration
+        PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
+        "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+
+<generatorConfiguration>
+  <context id="Mysql" targetRuntime="MyBatis3Simple" defaultModelType="flat">
+    
+    <plugin type="com.tydic.traffic.tafa.daf.mybatis.tk.generator.MapperPlugin">
+      <property name="mappers" value="com.tydic.traffic.tafa.daf.mybatis.tk.common.Mapper"/>
+      <!-- caseSensitive默认false，当数据库表名区分大小写时，可以将该属性设置为true -->
+      <property name="caseSensitive" value="true"/>
+    </plugin>
+
+    <jdbcConnection driverClass="oracle.jdbc.OracleDriver"
+                    connectionURL="jdbc:oracle:thin:@(DESCRIPTION =(ADDRESS = (PROTOCOL = TCP)(HOST = 10.235.56.218)(PORT = 1521))(CONNECT_DATA = (SERVICE_NAME = orcl)))"
+                    userId="itmssub"
+                    password="szitms">
+    </jdbcConnection>
+    <javaTypeResolver>
+		<property name="forceBigDecimals" value="false" />
+	</javaTypeResolver>	
+    <javaModelGenerator targetPackage="com.tydic" targetProject="F:\Workspaces_new\code"/>
+
+    <sqlMapGenerator targetPackage="com.tydic"  targetProject="F:\Workspaces_new\code"/>
+
+    <javaClientGenerator targetPackage="com.tydic" targetProject="F:\Workspaces_new\code" type="XMLMAPPER" />
+
+    <table tableName="ITMS_DUTY_HONOR" >
+      <generatedKey column="id" sqlStatement="oracle" identity="true"/>
+
+    </table>
+  </context>
+</generatorConfiguration>

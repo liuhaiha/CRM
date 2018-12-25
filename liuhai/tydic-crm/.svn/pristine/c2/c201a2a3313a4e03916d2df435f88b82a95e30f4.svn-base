@@ -1,0 +1,231 @@
+package com.tydic.traffic.crm.service.impl;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.annotation.Resource;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+
+import com.tydic.traffic.crm.common.cache.SysCodeCache;
+import com.tydic.traffic.crm.dao.TSysEmployeeMapper;
+import com.tydic.traffic.crm.dao.TSysUserMapper;
+import com.tydic.traffic.crm.entity.TSysEmployee;
+import com.tydic.traffic.crm.entity.TSysUser;
+import com.tydic.traffic.crm.service.TSysEmployeeService;
+import com.tydic.traffic.crm.utils.CommonUtil;
+import com.tydic.traffic.crm.vo.EmployeeVo;
+import com.tydic.traffic.tafa.daf.mybatis.tk.entity.Example;
+import com.tydic.traffic.tafa.daf.page.Page;
+import com.tydic.traffic.tafa.daf.page.annotion.Pageable;
+
+@Service
+public class TSysEmployeeServiceImpl implements TSysEmployeeService {
+
+	private static final Logger logger= LoggerFactory.getLogger(TSysEmployeeServiceImpl.class); 
+	
+	@Resource
+	private TSysEmployeeMapper tSysEmployeeMapper;
+	
+	@Resource
+	private TSysUserMapper tSysUserMapper;
+	
+	/**
+	 * 通过工号获取员工信息
+	 */
+	public TSysEmployee getEmployeeInfo(String eno) {
+//		Example example = new Example(TSysEmployee.class);
+//		Example.Criteria criteria=example.createCriteria();
+//		criteria.andEqualTo("eno", eno);
+		TSysEmployee employee = new TSysEmployee();
+		employee.setEno(eno);
+		try
+		{
+			employee = tSysEmployeeMapper.selectOne(employee);
+		}
+		catch(Exception ex)
+		{
+			logger.error("查询员工个人信息出错,参数={eno=" + eno + "}",ex);
+		}
+		return employee;
+	}
+	
+	/**
+	 * 修改员工个人信息
+	 */
+	public int updateInfo(TSysEmployee emp) {
+		int result = -1;
+		TSysEmployee dbEmp = getEmployeeInfo(emp.getEno());
+		try
+		{
+			emp.setCreatetime(dbEmp.getCreatetime());
+			emp.setCreator(dbEmp.getCreator());
+			result = tSysEmployeeMapper.updateByPrimaryKeySelective(emp);
+		}
+		catch(Exception ex)
+		{
+			logger.error("更新员工个人信息出错,参数={" + emp.toString() + "}",ex);
+		}
+		return result;
+	}
+	
+	/**
+	 * 分页查询个人日志
+	 */
+	@Pageable
+	public void listEmpByPage(Page<EmployeeVo> pageResult, EmployeeVo employee) 
+	{
+		List<EmployeeVo> empList = null;
+		try
+		{
+			if (null != employee.getEndDate())
+			{
+				employee.getEndDate().setTime(employee.getEndDate().getTime() + 1000 * 60 * 60 *24);
+			}
+			empList = tSysEmployeeMapper.queryEmployee(employee);
+			for (int i = 0, len = CommonUtil.getLen(empList); i < len; i++)
+			{
+				EmployeeVo vo = empList.get(i);
+				vo.setDeptName(SysCodeCache.getCodeText(SysCodeCache.CODE_DEPT, vo.getDno()));
+				vo.setStatName(SysCodeCache.getCodeText(SysCodeCache.CODE_STATION, vo.getStation()));
+				vo.setSex(SysCodeCache.getCodeText(SysCodeCache.CODE_SEX, vo.getSex()));
+			}
+		}
+		catch(Exception ex)
+		{
+			logger.error("分页查询员工信息出错,参数={" + employee.toString() + "}", ex);
+		}
+		pageResult.setResults(empList);
+	}
+
+	/**
+	 * 添加员工
+	 */
+	@SuppressWarnings("null")
+	public boolean addEmp(TSysEmployee employee) {
+		int num = 0;
+		try
+		{
+			String leaderEno;
+			String upperLeaderEno = null;
+			String upperLeaderStr ="";
+			if(employee.getUpperLeader() !=null){
+				leaderEno = employee.getUpperLeader();
+				do{
+					upperLeaderEno = tSysEmployeeMapper.selectByLeaderEno(leaderEno);
+					if(upperLeaderEno == null){
+						upperLeaderEno = "";
+					}else{
+						leaderEno = upperLeaderEno;
+						upperLeaderStr += upperLeaderEno + "|" ;
+					}
+				}while(upperLeaderEno.length() != 0);
+				employee.setUpperLeaderLink(upperLeaderStr);
+				num = tSysEmployeeMapper.insert(employee);
+			}else{
+				num = tSysEmployeeMapper.insert(employee);
+			}
+		}
+		catch(Exception ex)
+		{
+			logger.error("添加员工信息出错,参数={" + employee.toString() + "}", ex);
+		}
+		return num > 0;
+	}
+	
+	/**
+	 * 检查员工编号是否存在
+	 * @param eno 员工编号
+	 * @return
+	 */
+	public boolean isExistEmp(String eno)
+	{
+		Example example = new Example(TSysEmployee.class);
+		Example.Criteria criteria = example.createCriteria();
+		criteria.andEqualTo("eno",eno);
+		try
+		{
+			List<TSysEmployee> list = tSysEmployeeMapper.selectByExample(example);
+			return CommonUtil.getLen(list) > 0;
+		}
+		catch(Exception ex)
+		{
+			logger.error("检查员工编号是否存在时出错,参数={eno=" + eno + "}", ex);
+			return false;
+		}
+	}
+
+	/**
+	 * 删除员工信息
+	 */
+	public boolean delEmp(String eids) {
+		if (CommonUtil.isNull(eids))
+		{
+			return false;
+		}
+		int num = 0;
+		List<Integer> eidList = new ArrayList<>();
+		Example example = new Example(TSysEmployee.class);
+		Example.Criteria c = example.createCriteria();
+		
+		
+		try
+		{
+			String[] eidArray = eids.split(",");
+			for (String eid:eidArray)
+			{
+				eidList.add(CommonUtil.replaceNullInt(eid));
+			}
+			c.andIn("eid", eidList);
+			num = tSysEmployeeMapper.deleteByExample(example);
+			
+			example = new Example(TSysUser.class);
+			c = example.createCriteria();
+			c.andIn("eid", eidList);
+			tSysUserMapper.deleteByExample(example);
+		}
+		catch(Exception ex)
+		{
+			logger.error("删除员工信息出错,参数={eids=" + eids + "}", ex);
+		}
+		return num > 0;
+	}
+
+	/**
+	 * 修改员工信息
+	 */
+	public boolean modEmo(TSysEmployee employee) {
+		TSysEmployee dbEmp = tSysEmployeeMapper.selectByPrimaryKey(employee.getEid());
+		int num = 0;
+		try
+		{
+			employee.setCreator(dbEmp.getCreator());
+			employee.setCreatetime(dbEmp.getCreatetime());
+//			num = tSysEmployeeMapper.updateByPrimaryKey(employee);
+			num = tSysEmployeeMapper.updateByPrimaryKeySelective(employee);
+		}
+		catch(Exception ex)
+		{
+			logger.error("修改员工信息出错,参数={" + employee.toString()
+			+ "}", ex);
+		}
+		return num > 0;
+	}
+
+	/**
+	 * 查询员工个人信息
+	 */
+	public TSysEmployee geEmp(Integer eid) {
+		try
+		{
+			return tSysEmployeeMapper.selectByPrimaryKey(eid);
+		}
+		catch(Exception ex)
+		{
+			logger.error("查询员工信息出错,参数={eid=" + eid+ "}", ex);
+		}
+		return null;
+	}
+}

@@ -1,0 +1,163 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<title>工作日志</title>
+		<meta name="renderer" content="webkit">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="format-detection" content="telephone=no">
+
+		<link rel="stylesheet" href="../plugins/layui/css/layui.css" media="all" />
+		
+		
+		<link rel="stylesheet" href="../css/global.css" media="all">
+		<link rel="stylesheet" href="../css/font-awesome.min.css" media="all">
+		
+		<script type="text/javascript" src="/crm/js/commonjs/pagejs.js" defer></script>
+	</head>
+
+	<body style="min-width:1024px;">
+		<div class="admin-main" style="white-space:nowrap;overflow:auto;margin:0px;" id="parentDiv">
+			<div id="projDiv" style="width:100%;display: inline-block;margin-top:10px;border:2px solid #000;border-color:#1AA094;">
+				<fieldset style="border:2px solid #1AA094;">
+					<legend align="left" style="font-weight:bold;color:#B22222;">条件查询</legend>
+						<table class="site-table table-hover">
+							<thead>
+								<tr>
+									<td style="font-size:11px;text-align:right;width:8%;min-width:90px;">
+										关键字：
+									</td>
+									<td style="font-size:11px;width:20%;">
+										<input type="text" name="content" id="content" style="height:30px;" class="layui-input" placeholder="工作日志/存在问题/下一步计划/需要协调">
+									</td>
+									<td style="font-size:11px;text-align:right;width:8%;min-width:90px;">
+										填报时间：
+									</td>
+									<td style="font-size:11px;width:40%;min-width:300px;">
+										<input type="text" id="beginDate" name="beginDate" lay-verify="hiredate" class="layui-input" style="width:47%;display: inline-block;height:30px;">
+										至
+										<input type="text" id="endDate" name="endDate" lay-verify="hiredate" class="layui-input" style="width:47%;display: inline-block;height:30px;">
+									</td>
+									<td style="font-size:11px;text-align:center;">
+										<button class="layui-btn" id="btnSearch" lay-filter="btnSearch" style="font-size:11px;">
+											<i class="layui-icon">&#xe615;</i> 搜索
+										</button>
+									</td>
+								</tr>
+								
+								<tr>
+									<td style="font-size:11px;text-align:right;width:8%;min-width:90px;">
+										填报人：
+									</td>
+									<td style="font-size:11px;width:20%;">
+										<input type="text" name="creator" id="creator" style="height:30px;" placeholder="工号/姓名" autocomplete="off" class="layui-input">
+									</td>
+									<td>
+									</td>
+									<td style="text-align:center;">
+										<button id="thisWeek"  class="layui-btn"><i class="layui-icon">&#xe615;</i>本周</button>
+										<button id="thisMonth"  class="layui-btn"><i class="layui-icon">&#xe615;</i>本月</button>
+									
+										<button id="thisQuarter"  class="layui-btn"><i class="layui-icon">&#xe615;</i>本季度</button>
+										<button id="thisYear"  class="layui-btn"><i class="layui-icon">&#xe615;</i>本年度</button>
+									</td>
+									<td style="font-size:11px;text-align:center;">
+										<button class="layui-btn" id="btnReset" lay-filter="btnReset" style="font-size:11px;">
+											<i class="layui-icon">&#x1002;</i> 重置
+										</button>
+									</td>
+								</tr>
+							</thead>
+							<tbody>
+							</tbody>
+						</table>
+				</fieldset>
+				 <!-- 日期快捷查询  -->
+				<!--<fieldset style="border:2px solid #1AA094;">
+				<legend align="left" style="font-weight:bold;color:#B22222;">日期快捷查询</legend>
+				<table class="site-table table-hover" >
+							<tr style="background-color:#1AA094;">
+								<td><button id="thisWeek" style="background-color:#1AA094;width:100%">本周</button></td>
+								<td><button id="thisMonth" style="background-color:#1AA094;width:100%">本月</button></td>
+								<td><button id="thisQuarter" style="background-color:#1AA094;width:100%">本季度</button></td>
+								<td><button id="thisYear" style="background-color:#1AA094;width:100%">本年度</button></td>
+							</tr>
+				</table>
+				</fieldset> -->
+				<!--- 工作日志列表--->
+				<fieldset style="border:2px solid #1AA094;">
+					<legend align="left" style="font-weight:bold;color:#B22222;">工作日志列表</legend>
+					
+					<table class="site-table table-hover" >
+							<tr style="background-color:#1AA094;">
+								<td colspan="10">
+									<div class="layui-tab admin-nav-card layui-tab-brief" style="height:40px;">
+										<ul class="layui-tab-title">
+											<li class="layui-this" style="width:99%;">
+												<i class="layui-icon" style="float:left;margin-right:10px;font-size:11px;font-style:normal" id ="myLog">&#xe612;我的日志</i>
+												<i class="layui-icon" style="float:left;margin-right:10px;font-size:11px;font-style:normal" id="myStaffLog">&#xe625;直接下属日志</i>
+												<i class="layui-icon" style="float:left;margin-right:10px;font-size:11px;font-style:normal" id="myTeamLog">&#xe613;所属团队日志</i>
+												<i class="layui-icon" style="float:right;margin-right:10px;font-size:11px;" id="btnExport">&#xe641;导出</i> 
+												<i class="layui-icon" style="float:right;margin-right:10px;font-size:11px;" id="btnDel">&#xe640;删除</i> 
+												<i class="layui-icon" style="float:right;margin-right:10px;font-size:11px;" id="btnEdit">&#xe642;编辑</i> 
+												<i class="layui-icon" style="float:right;margin-right:10px;font-size:11px;" id="btnAdd">新增</i> 
+											</li>
+										</ul>
+									</div>
+								</td>
+							</tr>
+							<tr style="font-size:11px;height:35px;">
+								<th style="font-size:11px;">选择</th>
+								<th style="font-size:11px;">工作日志</th>
+								<th style="font-size:11px;">存在的问题</th>
+								<th style="font-size:11px;">下一步计划</th>
+								<th style="font-size:11px;">需要协调</th>
+								<th id="logTime" style="font-size:11px;min-width:140px;">日志日期</th>
+								<th id="logCreater" style="font-size:11px;min-width:45px;">填报人</i></th>
+								<th id="logState" style="font-size:11px;">是否已读</th>
+								<th id="logReadstate" style="font-size:11px;">是否批阅</th>
+								<th style="font-size:11px;">领导批阅意见</th>
+							</tr>
+							<tbody id="logTbody">
+								
+							</tbody>
+							<!-- <tr>
+								<td colspan='7'>
+									<div class="layui-box layui-laypage layui-laypage-default" id="layui-laypage-0" style="text-align:center;width:90%;">
+											<a id="first_page" href="#" class="laypage_first">第一页</a>
+											<a id="pre_page" class="layui-laypage-prev">上一页</a>						
+											<a id="next_page" class="layui-laypage-next">下一页</a>
+											<a id="last_page" class="layui-laypage-last">最后页</a>
+									</div>
+								</td>
+							</tr> -->
+							<tr>
+								<td id="page_log" align="right" colspan='8'></td>
+							</tr>
+					</table>
+				
+				</fieldset>
+			</div>
+		</div>
+		
+		<script type="text/javascript" src="../plugins/layui/layui.js"></script>
+		<script src="../js/jquery-1.8.1.min.js" type="text/javascript"></script>
+		<script src="../js/personal/worklog/loglist.js" type="text/javascript" defer></script>
+		<script>
+		var layer;
+		layui.config({
+				base: '../plugins/layui/modules/'
+			});
+		layui.use(['form', 'layer', 'laydate','laypage' ], function() {
+			var form = layui.form(),
+			layer = layui.layer;
+		});
+		</script>
+	</body>
+
+</html>

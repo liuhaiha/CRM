@@ -1,0 +1,68 @@
+
+<!-- ***************************************************************************************-->
+	<style>
+	<!--
+	font span{ font-size:15px; color: green;}
+	-->
+	</style>
+		
+	<tr>
+		<td colspan="20" align="right" height="35px">
+			共&nbsp;
+			<font id="jsrpagecount">
+			<span id="pageSizeLog">0</span>
+			条记录&nbsp;
+			
+			共&nbsp;
+			<span id="totalPage">0</span>
+			</font>&nbsp;页&nbsp;&nbsp;当前第&nbsp;
+			<font id="jsrcurrentpage"><span id="pageNumber">1</span>
+			</font>&nbsp;页&nbsp;&nbsp;&nbsp;&nbsp;
+			
+			<img src="/crm/res/pages/frame/dataview/images/fy_dy.jpg" onclick="topage('tofirst')" style="cursor: pointer;" />
+			&nbsp;
+			<img src="/crm/res/pages/frame/dataview/images/fy_sy.jpg" onclick="changePage('last')" style="cursor: pointer;" />
+			&nbsp;
+			<img src="/crm/res/pages/frame/dataview/images/fy_xy.jpg" onclick="changePage('next')" style="cursor: pointer;" />
+			&nbsp;
+			<img src="/crm/res/pages/frame/dataview/images/fy_zh.jpg" onclick="topage('tolast')"; style="cursor: pointer;" />
+			每页显示
+			<input type="text" style="width: 25px" id="pageSize"  onchange="jpage()" value="10" maxlength="3"/>			
+			&nbsp;&nbsp;&nbsp; 跳转到第&nbsp;
+			<select id="jpageNumber" onchange="tpageLog()" style="width: 40px;"> </select>
+			&nbsp;页
+		</td>
+	</tr>
+	<script type="text/javascript">
+	// 跳转到某一页
+	function tpageLog() {
+		var tpnum = $("#jpageNumber option:selected").text();
+		$("#pageNumber").text(tpnum);
+		worklog.queryLog();
+		//getDetail("obj");
+	} 
+	
+	// 每页显示数
+	function jpage() {
+		pageSize = $("#pageSize").val();
+		worklog.queryLog();
+		//getDetail("obj");
+	}
+	
+	// 加载分页信息
+	function loadpageLog(totalitem) {
+		var pageSize = $("#pageSize").val(); // 每页显示多少条
+		var totalPage = totalitem % pageSize == 0 ? totalitem / pageSize : (Math.ceil(totalitem / pageSize)); // 总共多少页
+		$("#totalPage").text(totalPage);
+		$("#pageSizeLog").text(totalitem);
+		$("#jpageNumber").html("");
+		var ht = "";
+		for ( var k = 1; k <= totalPage; k++) {
+			ht += "<option value='" + k + "'>" + k + "</option>";
+		}
+		$("#jpageNumber").html(ht);
+		$("#jpageNumber").val($("#pageNumber").text());
+	}
+	</script>
+	
+<!-- ***************************************************************************************-->

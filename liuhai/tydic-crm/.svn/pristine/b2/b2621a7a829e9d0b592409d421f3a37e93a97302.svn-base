@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tydic.traffic.crm.dao.TCrmLogMapper">
+  <resultMap id="BaseResultMap" type="com.tydic.traffic.crm.entity.TCrmLog">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="logID" jdbcType="INTEGER" property="logid" />
+    <result column="content" jdbcType="VARCHAR" property="content" />
+    <result column="creator" jdbcType="VARCHAR" property="creator" />
+    <result column="creator_no" jdbcType="VARCHAR" property="creatorNo" />
+    <result column="createtime" jdbcType="TIMESTAMP" property="createtime" />
+    <result column="problem" jdbcType="VARCHAR" property="problem" />
+    <result column="nextplan" jdbcType="VARCHAR" property="nextplan" />
+    <result column="needhelp" jdbcType="VARCHAR" property="needhelp" />
+    <result column="opinion" jdbcType="VARCHAR" property="opinion" />
+    <result column="state" jdbcType="INTEGER" property="state" />
+    <result column="readstate" jdbcType="INTEGER" property="readstate" />
+    <result column="logtime" jdbcType="TIMESTAMP" property="logtime" />
+    <result column="delstate" jdbcType="INTEGER" property="delstate" />
+    <result column="extend1" jdbcType="VARCHAR" property="extend1" />
+    <result column="extend2" jdbcType="VARCHAR" property="extend2" />
+    <result column="extend3" jdbcType="VARCHAR" property="extend3" />
+    <result column="modifier" jdbcType="VARCHAR" property="modifier" />
+    <result column="modifytime" jdbcType="TIMESTAMP" property="modifytime" />
+  </resultMap>
+   <select id="queryBirthdayWeekly" resultType="java.util.HashMap">
+  	<![CDATA[select * from  t_crm_linkman where birthday >=DATE_SUB(CURDATE(),INTERVAL 7 DAY) and birthday<DATE_ADD(CURDATE(),INTERVAL 1 DAY)]]>
+  </select>
+  <update id = "updateByLogID" parameterType = "java.lang.String">
+  	update t_crm_log set delstate  = 1 where logID in
+	<foreach collection="logidList" index="index" item="item" open="(" separator="," close=")">
+  	#{item}
+	</foreach>
+  </update>
+</mapper>

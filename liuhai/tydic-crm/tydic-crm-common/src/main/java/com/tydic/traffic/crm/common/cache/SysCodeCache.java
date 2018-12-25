@@ -1,0 +1,433 @@
+/*
+ * 文 件 名:  SysCodeCache.java
+ * 版    权:   Tydic Copyright 2018,  All rights reserved
+ * 描    述:  <描述>
+ * 创 建 人:  wlhuang
+ * 修 改 人:  
+ * 修改时间:  
+ * 修改内容:  <修改内容>
+ */
+package com.tydic.traffic.crm.common.cache;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.beanutils.BeanUtils;
+
+import com.tydic.traffic.crm.entity.TSysCode;
+import com.tydic.traffic.crm.service.SysCodeService;
+import com.tydic.traffic.crm.utils.CommonUtil;
+import com.tydic.traffic.crm.utils.SpringUtil;
+import com.tydic.traffic.crm.vo.SysCodeVo;
+
+/**
+ * 
+ * SysCodeCache
+ * @desc  数据字典缓存类
+ * @author wlhuang
+ * @version V1.0 2018年7月21日
+ * @since V1.0
+ */
+public class SysCodeCache {
+	private static Map<String, SysCodeVo> codeMap = new HashMap<>();
+	
+	/**
+	 * 性别
+	 */
+	public static final String CODE_SEX = "00001";
+	/**
+	 * 售前资料
+	 */
+	public static final String CODE_SALEDATA="00002";
+	
+	/**
+	 * 区域
+	 */
+	public static final String CODE_REGION="00003";
+	
+	/**
+	 * 客户来源
+	 */
+	public static final String CODE_CUS_SOURCE="00004";
+
+	/**
+	 * 单位类型
+	 */
+	public static final String CODE_UNITTYPE="00005";
+	
+	
+	/**
+	 * 工作日志类型
+	 */
+	public static final String CODE_WORKTYPE = "00012";
+	
+	
+	/**
+	 * 部门
+	 */
+	public static final String CODE_DEPT = "00015";
+	
+	/**
+	 * 岗位
+	 */
+	public static final String CODE_STATION = "00016";
+	
+	/**
+	 * 项目阶段
+	 */
+	public static final String CODE_PHASE = "00008";
+	
+	/**
+	 * 客户联系人
+	 */
+	public static final String CODE_CUSTOMERLIST = "00003";
+	
+	/**
+	 * 客户所在部门
+	 */
+	public static final String CODE_CUSDEPT = "00010";
+	
+	/**
+	 * 客户上级部门
+	 */
+	public static final String CODE_SUPERDEPT = "00009";
+	
+	/**
+	 * 职务
+	 */
+	public static final String CODE_POST = "00011";
+	
+	/**
+	 * 客户来源
+	 */
+	public static final String CODE_SOURCE = "00004";
+	
+	/**
+	 * 单位类型
+	 */
+	public static final String CODE_UNIT_TYPE = "00005";
+	
+	/**
+	 * 项目状态
+	 */
+	public static final String CODE_PROJ_STATUS = "00021";
+	/**
+	 * 布尔值
+	 */
+	public static final String CODE_BOOLEAN = "00022";
+	
+	/**
+	 * 中标角色
+	 */
+	public static final String CODE_WINROLE = "00023";
+	
+	/**
+	 * 所属部门
+	 */
+	public static final String CODE_BM= "00015";
+
+	/**
+	 * 商务负责人
+	 */
+	public static final String CODE_BUS = "002";
+	
+	/**
+	 * 售前负责人
+	 */
+	public static final String CODE_PRE = "001";
+	
+	/**
+	 * 项目负责人
+	 */
+	public static final String CODE_DEL = "003";
+
+	public static void init()
+	{
+		SysCodeService codeService = (SysCodeService)SpringUtil.getBean("sysCodeService");
+		List<SysCodeVo> queryList = convert(codeService.queryAll());
+		Collections.sort(queryList, new Comparator<SysCodeVo>() {
+			public int compare(SysCodeVo o1, SysCodeVo o2) 
+			{
+				if (CommonUtil.replaceNullInt(o1.getPid()) == 0 && CommonUtil.replaceNullInt(o2.getPid()) != 0)
+				{
+					return -1;
+				}
+				
+				else if (CommonUtil.replaceNullInt(o1.getPid()) != 0 && CommonUtil.replaceNullInt(o2.getPid()) == 0)
+				{
+					return 1;
+				}
+				return 0;
+			}
+		});
+		for (int i = 0; i < CommonUtil.getLen(queryList);)
+		{
+			SysCodeVo vo = queryList.get(0);
+			if (null == vo.getPid() || 0 == vo.getPid())
+			{
+				setChild(vo,queryList);
+				if (CommonUtil.getLen(vo.getChildList()) > 0)
+				{
+					removeChild(vo,queryList);
+				}
+			}
+			queryList.remove(vo);
+			codeMap.put(vo.getCategory(), vo);
+		}
+	}
+	
+	/**
+	 * 获取指定数据字典
+	 * @param category 字典类型
+	 * @return
+	 */
+	public static SysCodeVo getSysCode(String category) {
+		if (null == codeMap.get(category)) {
+			return null;
+		}
+
+		SysCodeVo code = null;
+		try {
+			code = (SysCodeVo) BeanUtils.cloneBean(codeMap.get(category));
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		return code;
+	}
+	
+	/**
+	 * 更新数据字典
+	 * @param category
+	 * @param code
+	 * @return
+	 */
+	public static boolean replaceSysCode(String category, SysCodeVo code)
+	{
+		if (null == codeMap.get(category)) {
+			return false;
+		}
+		
+		SysCodeVo parent = getSysCode(category);
+		if (parent.getCid().intValue() == code.getCid().intValue())
+		{
+			parent.setCode(code.getCode());
+			parent.setName(code.getName());
+			parent.setModifier(code.getModifier());
+			parent.setModifytime(code.getModifytime());
+			return true;
+		}
+		else
+		{
+			return replaceChildCode(parent.getChildList(), code);
+		}
+	}
+	
+	/**
+	 * 添加数据字典
+	 * @param category 字典类型
+	 * @param code 字典对象
+	 * @return
+	 */
+	public static boolean addSysCode(String category, SysCodeVo code)
+	{
+		if (null == codeMap.get(category)) {
+			codeMap.put(category, code);//不存在的数据字典则添加
+			return true;
+		}
+		
+		SysCodeVo parent = getSysCode(category);
+		if (parent.getCid().intValue() == code.getPid().intValue())
+		{
+			return parent.getChildList().add(code);
+		}
+		else
+		{
+			return addChildCode(parent.getChildList(), code);
+		}
+	}
+	
+	/**
+	 * 删除数据字典
+	 * @param category 字典类型
+	 * @param cid 字典ID
+	 */
+	public static boolean removeSysCode(String category, Integer cid)
+	{
+		SysCodeVo parent = getSysCode(category);
+		if (parent.getCid().intValue() == cid.intValue())
+		{
+			return codeMap.remove(category)!=null;
+		}
+		else
+		{
+			return removeChildCode(parent.getChildList(), cid);
+		}
+	}
+	
+	/**
+	 * 通过code获取字典的name值
+	 * @param category 字典类型
+	 * @param code 字典值
+	 * @return 
+	 */
+	public static String getCodeText(String category, String code)
+	{
+		SysCodeVo vo = codeMap.get(category);
+		if (null == vo)
+		{
+			return null;
+		}
+		
+		return getCodeText(vo.getChildList(),code);
+	}
+	
+	private static boolean addChildCode(List<SysCodeVo> codeList, SysCodeVo childCode)
+	{
+		int len = CommonUtil.getLen(codeList);
+		for (int i = 0; i < len; i++)
+		{
+			SysCodeVo code = codeList.get(i);
+			if (code.getCid().intValue() == childCode.getPid().intValue())
+			{
+				return code.getChildList().add(childCode);
+			}
+			else
+			{
+				if (addChildCode(code.getChildList(), childCode))
+				{
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	private static boolean replaceChildCode(List<SysCodeVo> codeList, SysCodeVo childCode)
+	{
+		int len = CommonUtil.getLen(codeList);
+		for (int i = 0; i < len; i++)
+		{
+			SysCodeVo code = codeList.get(i);
+			if (code.getCid().intValue() == childCode.getCid().intValue())
+			{
+				code.setCode(childCode.getCode());
+				code.setName(childCode.getName());
+				code.setModifier(childCode.getModifier());
+				code.setModifytime(childCode.getModifytime());
+				return true;
+			}
+			else
+			{
+				if (replaceChildCode(code.getChildList(), childCode))
+				{
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	private static boolean removeChildCode(List<SysCodeVo> codeList, Integer cid)
+	{
+		int len = CommonUtil.getLen(codeList);
+		for (int i = 0; i < len; i++)
+		{
+			SysCodeVo childCode = codeList.get(i);
+			if (childCode.getCid().intValue() == cid.intValue())
+			{
+				codeList.remove(childCode);
+				return true;
+			}
+			else
+			{
+				if (removeChildCode(childCode.getChildList(),cid))
+				{
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	
+	private static void removeChild(SysCodeVo vo, List<SysCodeVo> queryList)
+	{
+		if (CommonUtil.getLen(vo.getChildList()) == 0)
+		{
+			return;
+		}
+		
+		queryList.removeAll(vo.getChildList());
+		for (SysCodeVo child:vo.getChildList())
+		{
+			removeChild(child, queryList);
+		}
+	}
+	
+	private static void setChild(SysCodeVo vo,List<SysCodeVo> queryList)
+	{
+		int len = CommonUtil.getLen(queryList);
+		for (int i = 0; i < len; i++)
+		{
+			SysCodeVo vo2 = queryList.get(i);
+			if (null != vo2.getPid() && 0 != vo2.getPid())
+			{
+				if (CommonUtil.replaceNullInt(vo.getCid()).intValue() == CommonUtil.replaceNullInt(vo2.getPid()).intValue())
+				{
+					setChild(vo2,queryList);
+					vo.getChildList().add(vo2);
+				}
+			}
+		}
+	}
+	
+	private static String getCodeText(List<SysCodeVo> codeList, String code)
+	{
+		int len = CommonUtil.getLen(codeList);
+		if (len == 0 || CommonUtil.isNull(code))
+		{
+			return null;
+		}
+		
+		for (SysCodeVo vo:codeList)
+		{
+			if (CommonUtil.replaceNullStr(vo.getCode())
+					.equals(CommonUtil.replaceNullStr(code)))
+			{
+				return vo.getName();
+			}
+		}
+		
+		for (SysCodeVo vo:codeList)
+		{
+			String name = getCodeText(vo.getChildList(),code);
+			if (CommonUtil.isNotNull(name))
+			{
+				return name;
+			}
+		}
+		return null;
+	}
+	
+	private static List<SysCodeVo> convert(List<TSysCode> codeList)
+	{
+		List<SysCodeVo> newList = new ArrayList<SysCodeVo>();
+		int len = CommonUtil.getLen(codeList);
+		for (int i = 0; i < len; i++)
+		{
+			SysCodeVo newVo = new SysCodeVo();
+			try {
+				BeanUtils.copyProperties(newVo, codeList.get(i));
+			} catch (IllegalAccessException | InvocationTargetException e) {
+				e.printStackTrace();
+			}
+			newList.add(newVo);
+		}
+		return newList;
+	}
+}

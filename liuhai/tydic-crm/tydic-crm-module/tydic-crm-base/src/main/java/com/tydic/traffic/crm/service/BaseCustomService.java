@@ -1,0 +1,81 @@
+package com.tydic.traffic.crm.service;
+
+import java.util.List;
+
+import com.tydic.traffic.crm.entity.TCrmCustomer;
+import com.tydic.traffic.crm.entity.TCrmLinkman;
+import com.tydic.traffic.crm.entity.TCrmMeetingRecord;
+import com.tydic.traffic.crm.entity.TCrmProject;
+import com.tydic.traffic.crm.entity.TSysCode;
+import com.tydic.traffic.crm.entity.TSysEmployee;
+import com.tydic.traffic.crm.vo.TCrmLinkmanVo;
+import com.tydic.traffic.crm.vo.TCrmProjectVo;
+import com.tydic.traffic.crm.vo.UserInfo;
+import com.tydic.traffic.tafa.daf.page.Page;
+import com.tydic.traffic.tafa.daf.page.annotion.Pageable;
+
+/**
+ * 
+ * BaseCustomService
+ * @desc 
+ * @author wlhuang
+ * @version V1.0 2018年7月24日
+ * @since V1.0
+ */
+public interface BaseCustomService {
+	
+	public int queryFirstTreeId();
+	
+	//客户表操作
+	public int createCustomer(TCrmCustomer customer);
+	public int updateCustomer(TCrmCustomer customer);
+	public TCrmCustomer findCustById(Integer id);
+	public int delCustomerById(Integer cid);
+	
+	//项目表操作
+	public List<TCrmProject> getProjectList();
+	public int delProjectById(int pid);
+	public TCrmProject findProjectById(int pid);
+	public int updateProject(TCrmProject crmProject);
+	public int createProject(TCrmProject crmProject);
+	
+	//客户联系人表操作
+	public void getLinkmanList(Page<TCrmLinkmanVo> pageResult);
+	public int delLinkmanById(int lid);
+	public TCrmLinkman findLinkmanById(int lid);
+	public int updateLinkman(TCrmLinkman linkman);
+	public int createLinkman(TCrmLinkman linkman, Integer pid, UserInfo userInfo);
+	
+	//联动省份查询
+	public List<TSysCode> getProvince(int pid);
+	
+	public TSysCode getName(int cid);
+	
+	@Pageable
+	public void queryProjectList(Page<TCrmProjectVo> result);
+	@Pageable
+	public void queryProjectListById(Page<TCrmProjectVo> result, Integer id);
+	@Pageable
+	public void queryLinkmanList(Page<TCrmLinkmanVo> pageResult);
+	@Pageable
+	public void queryLinkmanListById(Page<TCrmLinkmanVo> pageResult, Integer id);
+	@Pageable
+	public void queryMeetingListById(Page<TCrmMeetingRecord> pageResult, Integer id);
+	@Pageable
+	public void queryLinkmanListByPid(Page<TCrmLinkmanVo> pageResult, Integer pid);
+	@Pageable
+	public void queryMeetingListByPid(Page<TCrmMeetingRecord> pageResult, Integer cid, Integer pid);
+	public List<TCrmLinkman> queryLinkmanListByName(TCrmLinkman linkman);
+	
+	public int delTree(int id);
+	public TSysCode addTree(TSysCode code);
+	
+	public List<TCrmCustomer> queryAllCust();
+	
+	public List<TSysEmployee> getBusLeader();
+	public List<TSysEmployee> getBusLeaderByName(TSysEmployee employee);
+	public List<TSysEmployee> getPreLeader();
+	public List<TSysEmployee> getDelLeader();
+	public List<TCrmProject> queryAllPro();
+
+}

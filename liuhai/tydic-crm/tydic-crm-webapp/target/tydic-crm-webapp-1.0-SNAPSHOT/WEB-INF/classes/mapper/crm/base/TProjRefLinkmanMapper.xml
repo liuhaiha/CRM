@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tydic.traffic.crm.dao.TProjRefLinkmanMapper">
+  <resultMap id="BaseResultMap" type="com.tydic.traffic.crm.entity.TProjRefLinkman">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="lid" jdbcType="INTEGER" property="lid" />
+    <result column="pid" jdbcType="INTEGER" property="pid" />
+    <result column="creator" jdbcType="VARCHAR" property="creator" />
+    <result column="createtime" jdbcType="TIMESTAMP" property="createtime" />
+    <result column="modifier" jdbcType="VARCHAR" property="modifier" />
+    <result column="modifytime" jdbcType="TIMESTAMP" property="modifytime" />
+  </resultMap>
+  
+  <select id="queryLinkmanListByPid" resultType="com.tydic.traffic.crm.vo.TCrmLinkmanVo" parameterType="java.lang.Integer">
+  		select cm.lid, cm.cid, cm.name, cm.sex, cm.dept, cm.super_dept as superDept, cm.post, cm.officephone, cm.telephone, cm.email 
+  			from t_crm_linkman cm, t_proj_ref_linkman pm 
+  			where cm.lid = pm.lid 
+	  		<if test="_parameter !=null and _parameter!=0">
+				and pm.pid = #{pid}
+			</if>
+			and cm.is_delete is null
+			order by cm.modifytime desc
+  </select>
+  
+</mapper>

@@ -1,0 +1,391 @@
+<html>
+
+<head>
+<meta charset="utf-8">
+<title>新客户交流</title>
+<meta name="renderer" content="webkit">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport"
+	content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="format-detection" content="telephone=no">
+
+<link rel="stylesheet" href="../../plugins/layui/css/layui.css"
+	media="all" />
+
+
+<link rel="stylesheet" href="../../css/global.css" media="all">
+<link rel="stylesheet" href="../../css/font-awesome.min.css" media="all">
+
+</head>
+
+<body>
+	<div class="admin-main" id="parentDiv">
+		<div id="projDiv"
+			style="border: 2px solid #000; border-color: #1AA094;">
+			<form action="">
+				<fieldset style="border: 2px solid #1AA094;">
+					<legend align="left" style="font-weight: bold; color: #B22222;">单位基本资料</legend>
+					<p>
+					<ul>
+						<table class="site-table table-hover">
+							<thead>
+								<tr>
+									<td style="width: 12%; font-size: 14px; text-align: right;">
+										客户名称：<font color="red">*</font></td>
+									<td style="width: 32%; font-size: 14px;"><input
+										name="customerName" id="customerName" type="text"
+										style="width: 98%; height: 30px;" placeholder="请输入客户名称"></td>
+									<td id="area" data-id="00004"
+										style="width: 12%; font-size: 14px; text-align: right;">
+										所属区域：<font color="red">*</font></td>
+									<td style="width: 28%; font-size: 14px;"><select
+										name="customerArea" id="customerArea"
+										onChange="getCustomerProv(this.value);"
+										style="width: 80%; height: 30px;">
+									</select><input type="hidden" id="extApplyId"></td>
+								</tr>
+								<tr>
+									<td style="width: 12%; font-size: 14px; text-align: right;">
+										单位地址：<font color="red">*</font></td>
+									<td style="width: 32%; font-size: 14px;"><input
+										name="customerAddr" id="customerAddr" type="text"
+										style="width: 98%; height: 30px;" placeholder="请输入客户地址"></td>
+									<td style="width: 12%; font-size: 14px; text-align: right;">
+										所属省份：<font color="red">*</font></td>
+									<td style="width: 28%; font-size: 14px;"><select
+										name="customerProv" id="customerProv"
+										style="width: 80%; height: 30px;">
+									</select><input type = "hidden" id = "customerInfoId"/></td>
+								</tr>
+								<tr>
+									<td style="width: 12%; font-size: 14px; text-align: right;">
+										客户来源：<font color="red">*</font></td>
+									<td style="width: 32%; font-size: 14px;"><select
+										name="customerSource" id="customerSource"
+										style="width: 98%; height: 30px;">
+									</select></td>
+									<td style="width: 12%; font-size: 14px; text-align: right;">
+										单位类别：<font color="red">*</font></td>
+									<td style="width: 28%; font-size: 14px;"><select
+										name="customerCategory" id="customerCategory"
+										style="width: 80%; height: 30px;">
+									</select></td>
+									<!-- <td style="text-align: center;">
+										<button type="button" class='layui-btn layui-btn-small' style="width: 50%; font-size: 14px; text-align: center;" name="saveCustomerInfoBtn" id="saveCustomerInfoBtn">保存</button>
+									</td> -->
+								</tr>
+							</thead>
+							<tbody>
+							</tbody>
+						</table>
+					</ul>
+				</fieldset>
+			</form>
+
+
+
+
+			<!--- 新增客户与会人员--->
+			<fieldset style="border: 2px solid #1AA094;">
+				<legend align="left" style="font-weight: bold; color: #B22222;">新增客户与会人员</legend>
+				<p>
+				<ul>
+
+					<div class="layui-tab admin-nav-card layui-tab-brief" style="height: 40px;">
+						<ul class="layui-tab-title">
+							<li class="layui-this" style="width: 99%;"><i
+								class="layui-icon" style="float: right; margin-right: 10px;"
+								onclick="delTCrmExtCust();">&#xe640;删除</i> <i class="layui-icon"
+								style="float: right; margin-right: 10px;" onclick="editTCrmExtCustpage()">编辑</i>
+								<i class="layui-icon" style="float: right; margin-right: 10px;"
+								onclick="openAddlinkManPage();">新增</i></li>
+						</ul>
+					</div>
+					<table class="site-table table-hover" id="xxxxTable">
+						<thead>
+							<tr style='font-size: 14px; height: 35px;'>
+								<th style='font-size: 14px;'>选择</th>
+								<th style='font-size: 14px;'>姓名</th>
+								<th style='font-size: 14px;'>性别</th>
+								<th style='font-size: 14px;'>部门</th>
+								<th style='font-size: 14px;'>上级部门</th>
+								<th style='font-size: 14px;'>职务</th>
+								<th style='font-size: 14px;'>办公电话</th>
+								<th style='font-size: 14px;'>联系电话</th>
+								<th style='font-size: 14px;'>E-Mail</th>
+								<!-- <th style='font-size: 14px;'>操作</th> -->
+							  </tr>
+						  </thead>
+						<tbody id="getLinkMan">
+						</tbody>
+					</table>
+				</ul>
+			</fieldset>
+
+			<!--- 交流侧重点：--->
+			<fieldset style="border: 2px solid #1AA094;">
+				<legend align="left" style="font-weight: bold; color: #B22222;">交流侧重点</legend>
+				<p>
+				<ul>
+					<fieldset style="border: 0px;">
+						<legend align="left" style="font-weight: bold;">1、交流侧重点：</legend>
+						<table
+							style="border: 0px; font-size: 14px; margin: 5px; min-width: 700px; line-height: 35px;">
+							<div id="extImport" style="margin-left: 5%;"></div>
+						</table>
+					</fieldset>
+					<fieldset style="border: 0px;">
+						<legend align="left" style="font-weight: bold;">2、交流主题：</legend>
+						<table
+							style="border: 0px; font-size: 14px; margin: 5px; min-width: 700px; line-height: 35px;">
+							<div id="extTheme" style="margin-left: 5%;"></div>
+						</table>
+					</fieldset>
+				</ul>
+			</fieldset>
+
+			<!--- 项目整体介绍：--->
+			<fieldset style="border: 2px solid #1AA094;">
+				<legend align="left" style="font-weight: bold; color: #B22222;">项目整体介绍</legend>
+				<p>
+				<ul>
+					<table style="border: 0px; font-size: 14px; margin: 5px; min-width: 700px; line-height: 35px; margin-left: 15px; border-collapse: separate; border-spacing: 0px 10px;">
+						<tr>
+							<td style="width: 15%; text-align: right;">1、状态：&nbsp;&nbsp;</td>
+							<td><select name="itemStatus" id="itemStatus"
+								style="width: 30%; height: 30px;" onChange="itemStatusChange();">
+									<option value="1">已有具体项目</option>
+									<!-- <option value="1">已有具体项目，请填写项目名</option> -->
+									<option value="0">无项目，向客户整体介绍公司及交管建设成果</option>
+							</select> <!-- <input type="text" name="itemName" id="itemName"
+								style="width: 15%; height: 30px" placeholder="请填写项目名" />
+								<button  class='layui-btn layui-btn-small' id="savePro">保存项目</button>
+								<input type="hidden" id="pid" name="pid"> -->
+								</td>
+						</tr>
+						<tr>
+							<td style="width: 15%; text-align: right;">2、项目阶段：&nbsp;&nbsp;</td>
+							<td><select name="itemStage"
+								style="width: 30%; height: 30px" id="itemStage">
+							</select></td>
+						</tr>
+						<tr>
+							<td style="width: 15%; text-align: right;">3、项目金额：&nbsp;&nbsp;</td>
+							<td colspan="2"><input type="text" name="itemMoney"
+								id="itemMoney" style="width: 30%; height: 30px" placeholder= "预计金额">&nbsp;&nbsp;万元
+							</td>
+						</tr>
+						<tr>
+							<td style="width: 15%; text-align: right;">4、预计招标时间：&nbsp;&nbsp;</td>
+							<td colspan="2"><input type="text" name="itemEstInvite" id="itemEstInvite" style="width: 30%; height: 30px" onclick="layui.laydate({elem: this})"></td>
+						</tr>
+						<tr>
+							<td style="width: 15%; text-align: right;">5、项目期数：&nbsp;&nbsp;</td>
+							<td colspan="2"><input type="text" name="itemPeriod"
+								id="itemPeriod" style="width: 30%; height: 30px"  placeholder= "预计期数">
+								期</td>
+						</tr>
+						<tr>
+							<td style="width: 15%; text-align: right;">6、客户是否明确要求与第三方公司合作：&nbsp;&nbsp;</td>
+							<td><select name="cooperOther" id="cooperOther"
+								style="width: 30%; height: 30px" id="ifPartner">
+									<option value= "">--选择--</option>
+									<option value="1">是</option>
+									<option value="0">否</option>
+							</select></td>
+						</tr>
+						<tr>
+							<td style="width: 15%; text-align: right;">7、我方最可能中标的角色是：&nbsp;&nbsp;</td>
+							<td><select name="winRole" id="winRole"
+								style="width: 30%; height: 30px">
+								 	<option value = "">--选择--</option>
+									<option value="1">总包</option>
+									<option value="2">分包</option>
+									<option value="3">其他</option>
+							</select></td>
+						</tr>
+						<tr>
+							<td style="width: 15%; text-align: right;">8、项目硬件平台：&nbsp;&nbsp;</td>
+							<td colspan="2"><textarea style="width: 30%;" rows="3"
+									id="hardware" placeholder="项目硬件平台"></textarea></td>
+						</tr>
+						<tr>
+							<td style="width: 15%; text-align: right;">9、项目技术平台：&nbsp;&nbsp;</td>
+							<td colspan="2"><textarea style="width: 30%;" rows="3"
+									id="technology" placeholder="项目的技术平台简要描述"></textarea></td>
+						</tr>
+						<tr>
+							<td style="width: 15%; text-align: right;">10、项目云平台：&nbsp;&nbsp;</td>
+							<td colspan="2"><textarea style="width: 30%;" rows="3"
+									id="cloud" placeholder="如果项目需要上云，云平台简要描述"></textarea></td>
+						</tr>
+						<tr>
+							<td style="width: 15%; text-align: right;">11、项目大数据平台：&nbsp;&nbsp;</td>
+							<td><textarea style="width: 30%;" rows="3" id="bigdata"
+									placeholder="如果项目需要用到大数据，大数据平台简要描述"></textarea></td>
+						</tr>
+						<tr>
+							<td style="width: 15%; text-align: right;">12、交流时间：<font color="red">*</font>&nbsp;&nbsp;</td>
+							<td><input type="text" name="extTime" id="extTime" style="width: 30%; height: 30px" onclick="layui.laydate({elem: this,istime:true,format:'YYYY-MM-DD hh:mm:ss'});boxToTop();" placeholder="(请选择交流时间)">
+							</td>
+						</tr>
+						<tr>
+							<td style="width: 15%; text-align: right;">13、交流地点：<font color="red">*</font>&nbsp;&nbsp;</td>
+							<td><input name="extAddr" id="extAddr" style="width: 30%; height: 30px;" placeholder="请填写交流地点">
+							</td>
+						</tr>
+						<tr>
+							<td style="width: 15%; text-align: right;">14、项目审批人：<font color="red">*</font>&nbsp;&nbsp;</td>
+							<td><input name="apprMan" id="apprMan"
+								style="width: 30%; height: 30px;"></td>
+						</tr>
+						<tr>
+							<td style="width: 15%;">&nbsp;&nbsp;</td>
+							<td style="width: 50%; font-size: 14px;text-align: left;">
+								<button class="layui-btn layui-btn-small" onclick="saveTCrmExtApply()">
+									<i class="layui-icon">&#xe641;</i> 提交申请
+								</button>
+							</td>
+						</tr>
+					</table>
+				</ul>
+			</fieldset>
+		</div>
+	</div>
+	<div id="addlinkman" style="display: none;">
+		<div style = "margin-top:3%" class="modal-body" style="padding: 5px;">
+			<table class="site-table table-hover">
+				<thead>
+					<tr>
+						<td style="font-size: 14px; text-align: center;">姓名：<font color="red">*</font></td>
+						<td style="font-size: 14px;"><input type="text"
+							style="width: 98%; height: 30px;" name="linkManName"
+							id="linkManName" placeholder= "姓名"></td>
+					</tr>
+					<tr>
+						<td style="font-size: 14px; text-align: center;">性别：<font color="red">*</font></td>
+						<td style="font-size: 14px;"><select name="sex" id="sex"
+							style="width: 98%; height: 30px;">
+						</select></td>
+					</tr>
+					<tr>
+						<td style="font-size: 14px; text-align: center;">部门：</td>
+						<td style="font-size: 14px;"><select name="dept" id="dept"
+							style="width: 98%; height: 30px;">
+						</select></td>
+					</tr>
+					<tr>
+						<td style="font-size: 14px; text-align: center;">上级部门：</td>
+						<td style="font-size: 14px;"><select name="superDept"
+							id="superDept" style="width: 98%; height: 30px;">
+						</select></td>
+					</tr>
+					<tr>
+						<td style="font-size: 14px; text-align: center;">职务：</td>
+						<td style="font-size: 14px;"><select name="post" id="post"
+							style="width: 98%; height: 30px;">
+						</select></td>
+					</tr>
+					<tr>
+						<td style="font-size: 14px; text-align: center;">办公电话：</td>
+						<td style="font-size: 14px;"><input type="text"
+							style="width: 98%; height: 30px;" name="officephone" id="officephone" placeholder="请输入办公电话"></td>
+					</tr>
+					<tr>
+						<td style="font-size: 14px; text-align: center;">联系电话：</td>
+						<td style="font-size: 14px;"><input type="text" style="width: 98%; height: 30px;" name="telephone" id="telephone" placeholder="请输入有效的11位电话"></td>
+					</tr>
+					<tr>
+						<td style="font-size: 14px; text-align: center;">E-Mail：</td>
+						<td style="font-size: 14px;"><input type="text" style="width: 98%; height: 30px;" name="email" id="email" placeholder="请输入有效邮箱"></td>
+					</tr>
+				</thead>
+				<tbody>
+				</tbody>
+			</table>
+			<div style = "margin-top:5%;text-align: center;">
+				<button class='layui-btn layui-btn-small' style="width: 50%; font-size: 14px;" onclick="addLinkManInfo()">提交</button>
+			</div>
+		</div>
+	</div>
+	<div id="editlinkman" style="display: none;">
+		<div style = "margin-top:5%" class="modal-body" style="padding: 5px;">
+			<table class="site-table table-hover">
+				<thead>
+					<tr>
+						<td style="font-size: 14px; text-align: center;">姓名：</td>
+						<td style="font-size: 14px;"><input type="text"
+							style="width: 98%; height: 30px;" name="editlinkManName"
+							id="editlinkManName" value=""></td>
+					</tr>
+					<tr>
+						<td style="font-size: 14px; text-align: center;">性别：</td>
+						<td style="font-size: 14px;"><select name="editsex" id="editsex"
+							style="width: 98%; height: 30px;">
+						</select></td>
+					</tr>
+					<tr>
+						<td style="font-size: 14px; text-align: center;">部门：</td>
+						<td style="font-size: 14px;"><select name="editdept" id="editdept"
+							style="width: 98%; height: 30px;">
+						</select></td>
+					</tr>
+					<tr>
+						<td style="font-size: 14px; text-align: center;">上级部门：</td>
+						<td style="font-size: 14px;"><select name="editsuperDept"
+							id="editsuperDept" style="width: 98%; height: 30px;">
+						</select></td>
+					</tr>
+					<tr>
+						<td style="font-size: 14px; text-align: center;">职务：</td>
+						<td style="font-size: 14px;"><select name="editpost" id="editpost"
+							style="width: 98%; height: 30px;">
+						</select></td>
+					</tr>
+					<tr>
+						<td style="font-size: 14px; text-align: center;">办公电话：</td>
+						<td style="font-size: 14px;"><input type="text"
+							style="width: 98%; height: 30px;" name="editofficephone" id="editofficephone" placeholder="请输入办公电话"></td>
+					</tr>
+					<tr>
+						<td style="font-size: 14px; text-align: center;">联系电话：</td>
+						<td style="font-size: 14px;"><input type="text" style="width: 98%; height: 30px;" name="edittelephone" id="edittelephone" placeholder="请输入有效的11位电话"></td>
+					</tr>
+					<tr>
+						<td style="font-size: 14px; text-align: center;">E-Mail：</td>
+						<td style="font-size: 14px;"><input type="text" style="width: 98%; height: 30px;" name="editemail" id="editemail" placeholder="请输入有效邮箱"></td>
+					</tr>
+				</thead>
+				<tbody>
+				</tbody>
+			</table>
+			<div style = "margin-top:3%;text-align: center;">
+				<button style="width: 40%; font-size: 14px;" onclick="editTCrmExtCustInfo()" class='layui-btn layui-btn-small'>修改</button>
+				<button style="width: 40%; font-size: 14px;" onclick="cancel()" class='layui-btn layui-btn-small'>取消</button>
+			</div>
+		</div>
+	</div>
+	<div id="extManTree" style="display:none">
+		<ul id="empTree"></ul>
+	</div>
+	<script type="text/javascript" src="../../plugins/layui/layui.js"></script>
+	<script src="../../js/jquery-1.8.1.min.js" type="text/javascript"></script>
+	<script src="../../js/sale/sale-new-meeting.js" type="text/javascript"></script>
+	<script>
+		var layer;
+		layui.config({
+			base : '../../plugins/layui/modules/'
+		});
+		layui.use([ 'form', 'layer', 'laydate' ], function() {
+			var form = layui.form(), layer = layui.layer;
+		});
+		function boxToTop(){
+			var top=$("#laydate_box").css("top").replace("px",'');
+			$("#laydate_box").css("top",Number(top)-246+'px');
+		}
+	</script>
+</body>
+
+</html>

@@ -1,0 +1,51 @@
+.layui-elem-quote {
+    margin-bottom: 3px;
+    padding: 3px;
+    line-height: 22px;
+    border-left: 5px solid #009688;
+    border-radius: 0 2px 2px 0;
+    background-color: #f2f2f2;
+}
+
+.layui-input-block {
+    margin-left: 110px;
+        min-height:22px;
+}
+
+.layui-body {
+    position: absolute;
+    left: 00px;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 998;
+    width: auto;
+    overflow: hidden;
+    overflow-y: auto;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+.layui-body2 {
+    position: absolute;
+    left: 00px;
+    right: 00px;
+    top: 0;
+    bottom: 0;
+    z-index: 998;
+    width: auto;
+	margin-left: 10px;
+	margin-right: 10px;
+    overflow-y: auto;
+    overflow-x:hidden;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+body{
+	min-width:800px;
+}
+.body{
+	min-width:800px;
+}

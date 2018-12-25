@@ -1,0 +1,4 @@
+com\tydic\traffic\crm\core\file\ApacheFileUploadAutoConfiguration.class
+META-INF\spring-configuration-metadata.json
+com\tydic\traffic\crm\core\file\FileUploadProperties.class
+com\tydic\traffic\crm\App.class

@@ -1,0 +1,729 @@
+package com.tydic.traffic.crm.controller;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.beanutils.BeanUtils;
+import org.apache.ibatis.annotations.Param;
+import org.apache.poi.ss.formula.functions.T;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.tydic.traffic.crm.common.cache.SysCodeCache;
+import com.tydic.traffic.crm.entity.TCrmCustomer;
+import com.tydic.traffic.crm.entity.TCrmLinkman;
+import com.tydic.traffic.crm.entity.TCrmMeetingRecord;
+import com.tydic.traffic.crm.entity.TCrmProject;
+import com.tydic.traffic.crm.entity.TSysCode;
+import com.tydic.traffic.crm.entity.TSysEmployee;
+import com.tydic.traffic.crm.service.BaseCustomService;
+import com.tydic.traffic.crm.service.SysCodeService;
+import com.tydic.traffic.crm.utils.CommonUtil;
+import com.tydic.traffic.crm.vo.SysCodeVo;
+import com.tydic.traffic.crm.vo.TCrmLinkmanVo;
+import com.tydic.traffic.crm.vo.TCrmProjectVo;
+import com.tydic.traffic.crm.vo.TreeNode;
+import com.tydic.traffic.crm.vo.UserInfo;
+import com.tydic.traffic.tafa.daf.page.Page;
+
+/**
+ * 
+ * BaseCustomController
+ * @desc 
+ * @author wlhuang
+ * @version V1.0 2018年7月24日
+ * @since V1.0
+ */
+@RestController
+@RequestMapping("/base")
+public class BaseCustomController extends BaseController{
+	
+	@Autowired
+	private BaseCustomService baseCustomService;
+	
+	@Autowired
+	private SysCodeService sysCodeService;
+	
+	/**
+	 * 树形菜单
+	 * @return
+	 */
+	@RequestMapping("/list")
+	@ResponseBody
+	public List<TreeNode> findCustomList() {
+		List<TreeNode> treeList = new ArrayList<TreeNode>();
+		SysCodeVo sysCode = SysCodeCache.getSysCode(SysCodeCache.CODE_CUSTOMERLIST);
+		if (sysCode != null) {
+			List<SysCodeVo> childList = sysCode.getChildList();
+			for (int i = 0,len = CommonUtil.getLen(childList); i < len; i++)
+			{
+				SysCodeVo code = childList.get(i);
+				TreeNode parentNode = convert(code);
+				parentNode.setLevel(1);
+				List<TreeNode> list = getChild(parentNode,code);
+				parentNode.setChildren(list);
+				treeList.add(parentNode);
+			}
+			addCustNode(treeList);
+		}
+		return treeList;
+	}
+	
+	private void addCustNode(List<TreeNode> treeList)
+	{
+		List<TCrmCustomer> custList = this.baseCustomService.queryAllCust();
+		Map<String, List<TCrmCustomer>> custGroup = new HashMap<>();
+		int len = CommonUtil.getLen(custList);
+		for (int i = 0; i < len; i++)
+		{
+			TCrmCustomer cust = custList.get(i);
+			String province = cust.getProvince();
+			if (CommonUtil.isNull(province))
+			{
+				continue;
+			}
+			List<TCrmCustomer> list = null;
+			if (null == custGroup.get(province))
+			{
+				list = new ArrayList<>();
+				custGroup.put(province, list);
+			}
+			else
+			{
+				list = custGroup.get(province);
+			}
+			list.add(cust);
+		}
+		
+		for (TreeNode areaNode:treeList)
+		{
+			if (CommonUtil.getLen(areaNode.getChildren()) == 0)
+			{
+				continue;
+			}
+			
+			for (TreeNode provNode:areaNode.getChildren())
+			{
+				String province = provNode.getAlias();
+				if (null != custGroup.get(province))
+				{
+					buildProvTree(provNode,custGroup.get(province));
+				}
+			}
+		}
+	}
+	
+	private void buildProvTree(TreeNode provNode, List<TCrmCustomer> custList)
+	{
+		List<TreeNode> childList = new ArrayList<>();
+		for (int i = 0, len = CommonUtil.getLen(custList); i < len; i++)
+		{
+			TreeNode node = new TreeNode();
+			TCrmCustomer cust = custList.get(i);
+			node.setId("" + cust.getCid());
+			node.setAlias(cust.getProvince());
+			node.setName(cust.getCname());
+			node.setSpread(true);
+			node.setLevel(provNode.getLevel() + 1);
+			childList.add(node);
+		}
+		
+		provNode.setChildren(childList);
+	}
+	
+	/**
+	 * 节点转换
+	 * @param code
+	 * @return
+	 */
+	private TreeNode convert(SysCodeVo code)
+	{
+		TreeNode node =  new TreeNode();
+		node.setId("" + code.getCid());
+		node.setAlias(code.getCode());
+		node.setName(code.getName());
+		node.setSpread(true);
+		node.setPid(code.getPid());
+		return node;
+	}
+	
+	/**
+	 * 获取子节点状态
+	 * @param parent
+	 * @param sysCode
+	 * @return
+	 */
+	private List<TreeNode> getChild(TreeNode parent,SysCodeVo sysCode)
+	{
+		if (CommonUtil.getLen(sysCode.getChildList()) == 0)
+		{
+			return null;
+		}
+		
+		List<SysCodeVo> codeChildList = sysCode.getChildList();
+		List<TreeNode> treeChildList = new ArrayList<>();
+		for (SysCodeVo code:codeChildList)
+		{
+			TreeNode child = convert(code);
+			child.setPcode(parent.getAlias());
+			child.setLevel(parent.getLevel()+1);
+			treeChildList.add(child);
+			List<TreeNode> list = getChild(child,code);
+			child.setChildren(list);
+		}
+		return treeChildList;
+	}
+	
+	@RequestMapping("/getProTree")
+	@ResponseBody
+	public List<TreeNode> getProTree() {
+		List<TreeNode> proTree = this.findCustomList();
+		addProNode(proTree);
+		return proTree;
+	}
+	private void addProNode(List<TreeNode> proTree){
+		List<TCrmProject> prolist = this.baseCustomService.queryAllPro();
+		for(int i = 0,len = CommonUtil.getLen(proTree);i<len;i++){
+			TreeNode pnode = proTree.get(i);
+			List<TreeNode> childlist = pnode.getChildren();
+			for(int j = 0,len1 = CommonUtil.getLen(childlist);j<len1;j++){
+				TreeNode node = childlist.get(j);
+				List<TreeNode> childlist1 = node.getChildren();
+				for(int n = 0,len2 = CommonUtil.getLen(childlist1);n<len2;n++){
+					TreeNode node2 = childlist1.get(n);
+					List<TreeNode> proNodeList = new ArrayList<TreeNode>(); 
+					for(TCrmProject pro : prolist){
+						if(pro.getCid() == Integer.valueOf(node2.getId())){
+							TreeNode snode = new TreeNode();
+							snode.setId(""+ pro.getPid());
+							snode.setName(pro.getShortName());
+							snode.setPid(Integer.valueOf(node.getId()));
+							proNodeList.add(snode);
+						}
+					}
+					node2.setChildren(proNodeList);
+				}
+			}
+		}
+	}
+	
+	@RequestMapping("/getFirstTreeId")
+	public int getFirstTreeId() {
+		return baseCustomService.queryFirstTreeId();
+	}
+	
+	/**
+	 * 删除节点
+	 * @param category
+	 * @param pid
+	 * @return
+	 */
+	@RequestMapping("/deleteChild")
+	@ResponseBody
+	public boolean deleteChild(String category, int cid) {
+		SysCodeCache.removeSysCode(SysCodeCache.CODE_CUSTOMERLIST, cid);
+		
+		return false;
+	}
+	
+	@RequestMapping("/addTree")
+	@ResponseBody
+	public TSysCode addTree(@ModelAttribute("code") TSysCode code) {
+		code.setCategory(SysCodeCache.CODE_CUSTOMERLIST);
+		return baseCustomService.addTree(code);
+	}
+	
+	@RequestMapping("/delTree/{id}/{level}")
+	@ResponseBody
+	public int delTree(@PathVariable Integer id,@PathVariable Integer level) {
+		if (level==3)
+		{
+			return baseCustomService.delCustomerById(id);
+		}
+		else
+		{
+			SysCodeCache.removeSysCode(SysCodeCache.CODE_CUSTOMERLIST, id);
+			return baseCustomService.delTree(id);
+		}
+	}
+	
+	/**
+	 * 获取区域下拉框数据
+	 * @return
+	 */
+	@RequestMapping("/getRegion")
+	@ResponseBody
+	public List<SysCodeVo> getRegion() {
+		List<SysCodeVo> list = new ArrayList<>();
+		SysCodeVo sysCode = SysCodeCache.getSysCode(SysCodeCache.CODE_CUSTOMERLIST);
+		list = sysCode.getChildList();
+		return list;
+	}
+	
+	/**
+	 * 根据区域code获取省份下拉框数据
+	 * @param areaCode
+	 * @return
+	 */
+	@RequestMapping("/getProvince/{areaCode}")
+	@ResponseBody
+	public List<SysCodeVo> getProvince(@PathVariable String areaCode) {
+		SysCodeVo sysCode = SysCodeCache.getSysCode(SysCodeCache.CODE_CUSTOMERLIST);
+		for (SysCodeVo area:sysCode.getChildList())
+		{
+			if (area.getCode().equals(areaCode))
+			{
+				return area.getChildList();
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * 获取客户来源下拉框数据
+	 * @return
+	 */
+	@RequestMapping("/getSource")
+	@ResponseBody
+	public List<SysCodeVo> getSource() {
+		List<SysCodeVo> list = new ArrayList<>();
+		SysCodeVo sysCode = SysCodeCache.getSysCode(SysCodeCache.CODE_SOURCE);
+		list = sysCode.getChildList();
+		return list;
+	}
+	
+	/**
+	 * 获取单位类型下拉框数据
+	 * @return
+	 */
+	@RequestMapping("/getUnitType")
+	@ResponseBody
+	public List<SysCodeVo> getUnitType() {
+		List<SysCodeVo> list = new ArrayList<>();
+		SysCodeVo sysCode = SysCodeCache.getSysCode(SysCodeCache.CODE_UNIT_TYPE);
+		list = sysCode.getChildList();
+		return list;
+	}
+	
+	/**
+	 * 获取商务负责人下拉框数据
+	 * @return
+	 */
+	@RequestMapping("/getBusLeader")
+	@ResponseBody
+	public List<TSysEmployee> getBusLeader() {
+		return baseCustomService.getBusLeader();
+	}
+	
+	/**
+	 * 获取售前负责人下拉框数据
+	 * @return
+	 */
+	@RequestMapping("/getPreLeader")
+	@ResponseBody
+	public List<TSysEmployee> getPreLeader() {
+		return baseCustomService.getPreLeader();
+	}
+	
+	/**
+	 * 获取项目负责人下拉框数据
+	 * @return
+	 */
+	@RequestMapping("/getDelLeader")
+	@ResponseBody
+	public List<TSysEmployee> getDelLeader() {
+		return baseCustomService.getDelLeader();
+	}
+	
+	/**
+	 * 新增客户信息
+	 * @param customer
+	 * @return
+	 */
+	@RequestMapping("/customer/create")
+	@ResponseBody
+	public int createCustomer(@ModelAttribute("TCrmCustomer") TCrmCustomer customer) {
+		UserInfo userInfo = super.getUser();
+		if (null != userInfo)
+		{
+			customer.setCreator(userInfo.getEname());
+			customer.setModifier(userInfo.getEname());
+		}
+		customer.setCreatetime(new Date());
+		customer.setModifytime(new Date());
+		return baseCustomService.createCustomer(customer);
+	}
+	
+	/**
+	 * 修改用户信息
+	 * @param customer
+	 * @return
+	 */
+	@RequestMapping("/customer/update")
+	@ResponseBody
+	public int updateCustomer(@ModelAttribute("TCrmCustomer") TCrmCustomer customer) {
+		UserInfo userInfo = super.getUser();
+		if (null != userInfo) {
+			customer.setModifier(userInfo.getEname());
+		}
+		customer.setModifytime(new Date());
+		return baseCustomService.updateCustomer(customer);
+	}
+	
+	/**
+	 * 查询单条客户信息
+	 * @param id
+	 * @return
+	 */
+	@RequestMapping("/findCustById/{id}")
+	@ResponseBody
+	public TCrmCustomer findCustById(@PathVariable Integer id) {
+		return baseCustomService.findCustById(id);
+	}
+	
+	/**
+	 * 获取到项目阶段下拉框数据
+	 * @return
+	 */
+	@RequestMapping("/getProjectPhase")
+	@ResponseBody
+	public List<SysCodeVo> getProjectPhase() {
+		List<SysCodeVo> list = new ArrayList<>();
+		SysCodeVo sysCode = SysCodeCache.getSysCode(SysCodeCache.CODE_PHASE);
+		list = sysCode.getChildList();
+		return list;
+	}
+	
+	/**
+	 * 获取到部门下拉框数据
+	 * @return
+	 */
+	@RequestMapping("/getDept")
+	@ResponseBody
+	public List<SysCodeVo> getDept() {
+		List<SysCodeVo> list = new ArrayList<>();
+		SysCodeVo sysCode = SysCodeCache.getSysCode(SysCodeCache.CODE_CUSDEPT);
+		list = sysCode.getChildList();
+		return list;
+	}
+	
+	/**
+	 * 获取到上级部门下拉框数据
+	 * @return
+	 */
+	@RequestMapping("/getSuperDept")
+	@ResponseBody
+	public List<SysCodeVo> getSuperDept() {
+		List<SysCodeVo> list = new ArrayList<>();
+		SysCodeVo sysCode = SysCodeCache.getSysCode(SysCodeCache.CODE_SUPERDEPT);
+		list = sysCode.getChildList();
+		return list;
+	}
+	
+	/**
+	 * 获取到职务下拉框数据
+	 * @return
+	 */
+	@RequestMapping("/getPost")
+	@ResponseBody
+	public List<SysCodeVo> getPost() {
+		List<SysCodeVo> list = new ArrayList<>();
+		SysCodeVo sysCode = SysCodeCache.getSysCode(SysCodeCache.CODE_POST);
+		list = sysCode.getChildList();
+		return list;
+	}
+	
+	/**
+	 * 获取客户性别数据
+	 * @return
+	 */
+	@RequestMapping("/getSex")
+	@ResponseBody
+	public List<SysCodeVo> getSex() {
+		List<SysCodeVo> list = new ArrayList<>();
+		SysCodeVo sysCode = SysCodeCache.getSysCode(SysCodeCache.CODE_SEX);
+		list = sysCode.getChildList();
+		return list;
+	}
+	
+	/**
+	 * 获取项目列表
+	 * @return
+	 */
+	@RequestMapping("/getProjectList")
+	@ResponseBody
+	public List<TCrmProjectVo> getProjectList() {
+		List<TCrmProjectVo> proList = new ArrayList<>();
+		List<TCrmProject> list = baseCustomService.getProjectList();
+		for (TCrmProject pro : list) {
+			TCrmProjectVo projectVo = new TCrmProjectVo();
+			try {
+				BeanUtils.copyProperties(projectVo, pro);
+				TSysCode code = baseCustomService.getName(Integer.valueOf(pro.getStage()));
+				projectVo.setStageName(code.getName());
+				proList.add(projectVo);
+			} catch (IllegalAccessException e) {
+				e.printStackTrace();
+			} catch (InvocationTargetException e) {
+				e.printStackTrace();
+			}
+		}
+		return proList;
+	}
+	
+	/**
+	 * 删除项目
+	 * @param id
+	 * @return
+	 */
+	@RequestMapping("/delProject/{id}")
+	@ResponseBody
+	public int delProject(@PathVariable Integer id) {
+		return baseCustomService.delProjectById(id);
+	}
+	
+	/**
+	 * 根据id获取单条项目数据
+	 * @param id
+	 * @return
+	 */
+	@RequestMapping("/findProjectById/{id}")
+	@ResponseBody
+	public TCrmProject findProjectById(@PathVariable Integer id) {
+		return baseCustomService.findProjectById(id);
+	}
+	
+	/**
+	 * 修改项目数据
+	 * @param crmProject
+	 * @return
+	 */
+	@RequestMapping("/project/update")
+	@ResponseBody
+	public int updateProject(@ModelAttribute("TCrmProject") TCrmProject crmProject) {
+		UserInfo userInfo = super.getUser();
+		if (null != userInfo) {
+			crmProject.setModifier(userInfo.getEname());
+		}
+		crmProject.setModifytime(new Date());
+		return baseCustomService.updateProject(crmProject);
+	}
+	
+	/**
+	 * 新增项目数据
+	 * @param project
+	 * @return
+	 */
+	@RequestMapping("/project/create")
+	@ResponseBody
+	public int createProject(@ModelAttribute("TCrmProject") TCrmProject project) {
+		UserInfo userInfo = super.getUser();
+		if (null != userInfo) {
+			project.setCreator(userInfo.getEname());
+			project.setModifier(userInfo.getEname());
+		}
+		project.setCreatetime(new Date());
+		project.setModifytime(new Date());
+		project.setFullName(project.getShortName());
+		return baseCustomService.createProject(project);
+	}
+	
+	/**
+	 * 获取全部客户联系人列表数据
+	 * @return
+	 */
+	@RequestMapping("/getLinkmanList")
+	@ResponseBody
+	public Page<TCrmLinkmanVo> getLinkmanList(@Param("pageNumber") Integer pageNumber,
+			@Param("pageSize") Integer pageSize) {
+		if (null == pageNumber) {
+			pageNumber = 1;
+		}
+		if (null == pageSize) {
+			pageSize = 10;
+		}
+		Page<TCrmLinkmanVo> pageResult = new Page<>();
+		pageResult.setPageNo(pageNumber);
+		pageResult.setPageSize(pageSize);
+		baseCustomService.getLinkmanList(pageResult);
+		return pageResult;
+	}
+	
+	/**
+	 * 条件查询客户联系人列表
+	 * @param pageNumber
+	 * @param pageSize
+	 * @param id
+	 * @return
+	 */
+	@RequestMapping("/queryLinkmanList")
+	@ResponseBody
+	public Page<TCrmLinkmanVo> queryLinkmanList(@Param("pageNumber") Integer pageNumber,
+			@Param("pageSize") Integer pageSize, @Param("id") Integer id) {
+		if (null == pageNumber) {
+			pageNumber = 1;
+		}
+		if (null == pageSize) {
+			pageSize = 10;
+		}
+		Page<TCrmLinkmanVo> pageResult = new Page<>();
+		pageResult.setPageNo(pageNumber);
+		pageResult.setPageSize(pageSize);
+		baseCustomService.queryLinkmanListById(pageResult, id);
+		return pageResult;
+	}
+	
+	@RequestMapping("/queryMeetingListById")
+	@ResponseBody
+	public Page<TCrmMeetingRecord> queryMeetingListById(@Param("pageNumber") Integer pageNumber,
+			@Param("pageSize") Integer pageSize, @Param("id") Integer id) {
+		if (null == pageNumber) {
+			pageNumber = 1;
+		}
+		if (null == pageSize) {
+			pageSize = 10;
+		}
+		Page<TCrmMeetingRecord> pageResult = new Page<>();
+		pageResult.setPageNo(pageNumber);
+		pageResult.setPageSize(pageSize);
+		baseCustomService.queryMeetingListById(pageResult, id);
+		return pageResult;
+	}
+	
+	/**
+	 * 选择项目查询对应客户联系人列表
+	 * @param pageNumber
+	 * @param pageSize
+	 * @param id
+	 * @return
+	 */
+	@RequestMapping("/queryLinkmanListByPid")
+	@ResponseBody
+	public Page<TCrmLinkmanVo> queryLinkmanListByPid(@Param("pageNumber") Integer pageNumber,
+			@Param("pageSize") Integer pageSize, @Param("pid") Integer pid) {
+		if (null == pageNumber) {
+			pageNumber = 1;
+		}
+		if (null == pageSize) {
+			pageSize = 10;
+		}
+		Page<TCrmLinkmanVo> pageResult = new Page<>();
+		pageResult.setPageNo(pageNumber);
+		pageResult.setPageSize(pageSize);
+		baseCustomService.queryLinkmanListByPid(pageResult, pid);
+		return pageResult;
+	}
+	
+	@RequestMapping("/queryMeetingListByPid")
+	@ResponseBody
+	public Page<TCrmMeetingRecord> queryMeetingListByPid(@Param("pageNumber") Integer pageNumber,
+			@Param("pageSize") Integer pageSize, @Param("cid") Integer cid, @Param("pid") Integer pid) {
+		if (null == pageNumber) {
+			pageNumber = 1;
+		}
+		if (null == pageSize) {
+			pageSize = 10;
+		}
+		Page<TCrmMeetingRecord> pageResult = new Page<>();
+		pageResult.setPageNo(pageNumber);
+		pageResult.setPageSize(pageSize);
+		baseCustomService.queryMeetingListByPid(pageResult, cid, pid);
+		return pageResult;
+	}
+	
+	/**
+	 * 条件查询项目列表
+	 * @param pageNumber
+	 * @param pageSize
+	 * @param id
+	 * @return
+	 */
+	@RequestMapping("/queryProjectList")
+	@ResponseBody
+	public Page<TCrmProjectVo> queryProjectList(@Param("pageNumber") Integer pageNumber,
+			@Param("pageSize") Integer pageSize, @Param("id") Integer id) {
+		if (null == pageNumber) {
+			pageNumber = 1;
+		}
+		if (null == pageSize) {
+			pageSize = 10;
+		}
+		Page<TCrmProjectVo> result = new Page<>();
+		result.setPageNo(pageNumber);
+		result.setPageSize(pageSize);
+		baseCustomService.queryProjectListById(result, id);
+		return result;
+	}
+	
+	/**
+	 * 删除一条客户联系人信息
+	 * @param id
+	 * @return
+	 */
+	@RequestMapping("/delLinkman/{id}")
+	@ResponseBody
+	public int delLinkman(@PathVariable Integer id) {
+		return baseCustomService.delLinkmanById(id);
+	}
+	
+	/**
+	 * 查找单条客户联系人信息
+	 * @param id
+	 * @return
+	 */
+	@RequestMapping("/findLinkmanById/{id}")
+	@ResponseBody
+	public TCrmLinkman findLinkmanById(@PathVariable Integer id) {
+		return baseCustomService.findLinkmanById(id);
+	}
+	
+	/**
+	 * 修改客户联系人信息
+	 * @param linkman
+	 * @return
+	 */
+	@RequestMapping("/linkman/update")
+	@ResponseBody
+	public int updateLinkman(@ModelAttribute("TCrmLinkman") TCrmLinkman linkman) {
+		UserInfo userInfo = super.getUser();
+		if (null != userInfo) {
+			linkman.setModifier(userInfo.getEname());
+		}
+		linkman.setModifytime(new Date());
+		return baseCustomService.updateLinkman(linkman);
+	}
+	
+	/**
+	 * 新增客户联系人
+	 * @param linkman
+	 * @return
+	 */
+	@RequestMapping("/linkman/create")
+	@ResponseBody
+	public int createLinkman(@ModelAttribute("TCrmLinkman") TCrmLinkman linkman,
+			@Param("pid") Integer pid) {
+		UserInfo userInfo = super.getUser();
+		if (null != userInfo) {
+			linkman.setCreator(userInfo.getEname());
+			linkman.setModifier(userInfo.getEname());
+		}
+		linkman.setCreatetime(new Date());
+		linkman.setModifytime(new Date());
+		return baseCustomService.createLinkman(linkman, pid, userInfo);
+	}
+	
+	@RequestMapping("/queryLinkmanListByName")
+	@ResponseBody
+	public List<TCrmLinkman> queryLinkmanListByName(@ModelAttribute("TCrmLinkman") TCrmLinkman linkman) {
+		return baseCustomService.queryLinkmanListByName(linkman);
+	}
+	
+}

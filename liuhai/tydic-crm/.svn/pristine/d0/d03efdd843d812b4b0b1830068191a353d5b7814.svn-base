@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tydic.traffic.crm.dao.TSysEmployeeMapper">
+  <resultMap id="BaseResultMap" type="com.tydic.traffic.crm.entity.TSysEmployee">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="eid" jdbcType="INTEGER" property="eid" />
+    <result column="eno" jdbcType="VARCHAR" property="eno" />
+    <result column="dno" jdbcType="VARCHAR" property="dno" />
+    <result column="ename" jdbcType="VARCHAR" property="ename" />
+    <result column="face_url" jdbcType="VARCHAR" property="faceUrl" />
+    <result column="sex" jdbcType="CHAR" property="sex" />
+    <result column="hiredate" jdbcType="DATE" property="hiredate" />
+    <result column="station" jdbcType="VARCHAR" property="station" />
+    <result column="linkphone" jdbcType="VARCHAR" property="linkphone" />
+    <result column="telephone" jdbcType="VARCHAR" property="telephone" />
+    <result column="e_mail" jdbcType="VARCHAR" property="eMail" />
+    <result column="creator" jdbcType="VARCHAR" property="creator" />
+    <result column="createtime" jdbcType="TIMESTAMP" property="createtime" />
+    <result column="modifier" jdbcType="VARCHAR" property="modifier" />
+    <result column="modifytime" jdbcType="TIMESTAMP" property="modifytime" />
+  </resultMap>
+</mapper>

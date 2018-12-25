@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tydic.traffic.crm.dao.TSysCodeMapper">
+  <resultMap id="BaseResultMap" type="com.tydic.traffic.crm.entity.TSysCode">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="cid" jdbcType="INTEGER" property="cid" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="code" jdbcType="VARCHAR" property="code" />
+    <result column="category" jdbcType="VARCHAR" property="category" />
+    <result column="sequence" jdbcType="INTEGER" property="sequence" />
+    <result column="pid" jdbcType="INTEGER" property="pid" />
+    <result column="type" jdbcType="CHAR" property="type" />
+    <result column="creator" jdbcType="VARCHAR" property="creator" />
+    <result column="createtime" jdbcType="TIMESTAMP" property="createtime" />
+    <result column="modifier" jdbcType="VARCHAR" property="modifier" />
+    <result column="modifytime" jdbcType="TIMESTAMP" property="modifytime" />
+  </resultMap>
+  <!-- 获取根目录下菜单 -->
+  <select id="primaryMenu" resultType="com.tydic.traffic.crm.entity.TSysCode" flushCache="true">
+  	select * from t_sys_code where pid=0 or pid is null
+  </select>
+  
+  <!-- delete code -->
+  <delete id="deleteById" parameterType="java.lang.Integer">
+  	delete from t_sys_code where cid=#{cid} and type='1'
+  </delete>
+  
+  <!-- add code -->
+  <insert id="insertByObject" parameterType="com.tydic.traffic.crm.entity.TSysCode">
+    insert into t_sys_code values(null,#{name},#{code},#{category},#{sequence},#{pid},#{type},#{creator},#{createtime},#{modifier},#{modifytime})
+  </insert>
+  <!-- update code -->
+  <update id="updateById" parameterType="com.tydic.traffic.crm.entity.TSysCode">
+  	update t_sys_code 
+  	set name=#{name},code=#{code},sequence=#{sequence},modifier=#{modifier},modifytime=#{modifytime}
+  	where cid=#{cid} and type='1'
+  </update>
+  <!-- query code -->
+  <select id="queryByObject" parameterType="com.tydic.traffic.crm.entity.TSysCode" resultType="com.tydic.traffic.crm.entity.TSysCode">
+  	select c.cid,c.name,c.code,c.category,c.sequence,c.pid,c.type,e1.ename as creator,c.createtime,e2.ename as modifier,c.modifytime
+  	from t_sys_code c
+  		left join t_sys_employee e1 on c.creator=e1.eno
+  		left join t_sys_employee e2 on c.modifier=e2.eno
+  	where
+  		1=1
+  	<if test="cid !=null">
+  		and c.cid=#{cid}
+  	</if>
+  	<if test="cid !=null">
+  		and c.cid=#{cid}
+  	</if>
+  	<if test="name !=null">
+  		and c.name=#{name}
+  	</if>
+  	<if test="category !=null">
+  		and c.category=#{category}
+  	</if>
+  	<if test="sequence !=null">
+  		and c.sequence=#{sequence}
+  	</if>
+  	<if test="pid !=null">
+  		and c.pid=#{pid}
+  	</if>
+  	<if test="cid !=null">
+  		and c.cid=#{cid}
+  	</if>
+  	<if test="type !=null">
+  		and c.type=#{type}
+  	</if>
+  	<if test="creator !=null">
+  		and c.creator=#{creator}
+  	</if>
+  	<if test="createtime !=null">
+  		and c.createtime=#{createtime}
+  	</if>
+  	<if test="modifier !=null">
+  		and c.modifier=#{modifier}
+  	</if>
+  	<if test="modifytime !=null">
+  		and c.modifytime=#{modifytime}
+  	</if>
+  	order by c.sequence,c.code,c.cid
+  </select>
+  <!-- 获取最大cagegory -->
+  <select id="maxCategory" resultType="java.lang.Integer" >
+  	select max(category) from t_sys_code
+  </select>
+  <!--the next code-->
+  <select id="nextCode" parameterType="com.tydic.traffic.crm.entity.TSysCode" resultType="java.lang.String" >
+  	select max(code+0)+1 from t_sys_code where category=#{category}
+  </select>
+</mapper>

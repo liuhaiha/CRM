@@ -1,0 +1,259 @@
+<html>
+
+<head>
+<meta charset="utf-8">
+<title>新客户交流</title>
+<meta name="renderer" content="webkit">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport"
+	content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="format-detection" content="telephone=no">
+
+<link rel="stylesheet" href="../plugins/layui/css/layui.css" media="all" />
+<link rel="stylesheet" href="../css/global.css" media="all">
+<link rel="stylesheet" href="../css/font-awesome.min.css" media="all">
+
+</head>
+
+<body>
+	<div class="admin-main" id="parentDiv">
+		<div id="projDiv"
+			style="border: 2px solid #000; border-color: #1AA094;">
+			<form action="">
+				<fieldset style="border: 2px solid #1AA094;">
+					<legend align="left" style="font-weight: bold; color: #B22222;">单位基本资料</legend>
+					<p>
+					<ul>
+						<table class="site-table table-hover">
+							<thead>
+								<tr>
+									<td style="width: 12%; font-size: 14px; text-align: right;">
+										客户名称：</td>
+									<td style="width: 32%; font-size: 14px;"><input
+										name="customerName" id="customerName" type="text"
+										style="width: 98%; height: 30px;" placeholder="请输入客户名称" readonly="readonly"></td>
+									<td id="area" data-id="00004"
+										style="width: 12%; font-size: 14px; text-align: right;">
+										所属区域：</td>
+									<td style="width: 28%; font-size: 14px;">
+										<input
+										name="customerName" id="customerArea" type="text"
+										style="width: 98%; height: 30px;" placeholder="请输入客户名称" readonly="readonly">
+									</td>
+								</tr>
+								<tr>
+									<td style="width: 12%; font-size: 14px; text-align: right;">
+										单位地址：</td>
+									<td style="width: 32%; font-size: 14px;"><input
+										name="customerAddr" id="customerAddr" type="text"
+										style="width: 98%; height: 30px;" placeholder="请输入客户地址" readonly="readonly"></td>
+									<td style="width: 12%; font-size: 14px; text-align: right;">
+										所属省份：</td>
+									<td style="width: 28%; font-size: 14px;">
+									<input
+										name="customerProv" id="customerProv"
+										style="width: 98%; height: 30px;" readonly="readonly">
+									</td>
+								</tr>
+								<tr>
+									<td style="width: 12%; font-size: 14px; text-align: right;">
+										客户来源：</td>
+									<td style="width: 32%; font-size: 14px;">
+									<input
+										name="customerSource" id="customerSource"
+										style="width: 98%; height: 30px;" readonly="readonly">
+									</td>
+									<td style="width: 12%; font-size: 14px; text-align: right;">
+										单位类别：</td>
+									<td style="width: 28%; font-size: 14px;"><input
+										name="customerCategory" id="customerCategory"
+										style="width: 98%; height: 30px;" readonly="readonly">
+									</td>
+								</tr>
+							</thead>
+							<tbody>
+							</tbody>
+						</table>
+					</ul>
+				</fieldset>
+			</form>
+
+
+
+
+			<fieldset style="border: 2px solid #1AA094;">
+				<legend align="left" style="font-weight: bold; color: #B22222;">客户与会人员</legend>
+					<table class="site-table table-hover" id="xxxxTable">
+						<thead>
+							<tr style='font-size: 14px; height: 35px;'>
+								<th style='font-size: 14px;'>姓名</th>
+								<th style='font-size: 14px;'>性别</th>
+								<th style='font-size: 14px;'>部门</th>
+								<th style='font-size: 14px;'>上级部门</th>
+								<th style='font-size: 14px;'>职务</th>
+								<th style='font-size: 14px;'>办公电话</th>
+								<th style='font-size: 14px;'>联系电话</th>
+								<th style='font-size: 14px;'>E-Mail</th>
+							  </tr>
+						  </thead>
+						<tbody id="getLinkMan">
+						</tbody>
+					</table>
+			</fieldset>
+
+			<!--- 交流侧重点：--->
+			<fieldset style="border: 2px solid #1AA094;">
+				<legend align="left" style="font-weight: bold; color: #B22222;">交流侧重点</legend>
+				<p>
+				<ul>
+					<fieldset style="border: 0px;">
+						<legend align="left" style="font-weight: bold;">1、交流侧重点：</legend>
+						<table
+							style="border: 0px; font-size: 14px; margin: 5px; min-width: 700px; line-height: 35px;">
+							<div id="extImport" style="margin-left: 5%;"></div>
+						</table>
+					</fieldset>
+					<fieldset style="border: 0px;">
+						<legend align="left" style="font-weight: bold;">2、交流主题：</legend>
+						<table
+							style="border: 0px; font-size: 14px; margin: 5px; min-width: 700px; line-height: 35px;">
+							<div id="extTheme" style="margin-left: 5%;"></div>
+						</table>
+					</fieldset>
+				</ul>
+			</fieldset>
+
+			<!--- 项目整体介绍：--->
+			<fieldset style="border: 2px solid #1AA094;">
+				<legend align="left" style="font-weight: bold; color: #B22222;">项目整体介绍</legend>
+				<p>
+				<ul>
+					<table style="border: 0px; font-size: 14px; margin: 5px; min-width: 700px; line-height: 35px; margin-left: 15px; border-collapse: separate; border-spacing: 0px 10px;">
+						<tr>
+							<td style="width: 20%; text-align: right;">1、状态：&nbsp;&nbsp;</td>
+							<td><input name="itemStatus" id="itemStatus"
+								style="width: 15%; height: 25px;"  readonly="readonly">
+							<!-- <input type="text" name="itemName" id="itemName"
+								style="width: 20%; height: 25px" placeholder="请填写项目名" readonly="readonly"/> -->
+								</td>
+						</tr>
+						<tr>
+							<td style="width: 20%; text-align: right;">2、项目阶段：&nbsp;&nbsp;</td>
+							<td><input name="itemStage" style="width: 15%; height: 25px" id="itemStage" readonly="readonly">
+							</td>
+						</tr>
+						<tr>
+							<td style="width: 20%; text-align: right;">3、项目金额：&nbsp;&nbsp;</td>
+							<td colspan="2"><input type="text" name="itemMoney"
+								id="itemMoney" style="width: 15%; height: 25px" placeholder= "预计金额" readonly="readonly">&nbsp;&nbsp;万元
+							</td>
+						</tr>
+						<tr>
+							<td style="width: 20%; text-align: right;">4、预计招标时间：&nbsp;&nbsp;</td>
+							<td colspan="2"><input type="text" name="itemEstInvite" id="itemEstInvite" style="width: 15%; height: 25px" readonly="readonly"></td>
+						</tr>
+						<tr>
+							<td style="width: 20%; text-align: right;">5、项目期数：&nbsp;&nbsp;</td>
+							<td colspan="2"><input type="text" name="itemPeriod"
+								id="itemPeriod" style="width: 15%; height: 25px"  placeholder= "预计期数" readonly="readonly">
+								期</td>
+						</tr>
+						<tr>
+							<td style="width: 20%; text-align: right;">6、客户是否明确要求与第三方公司合作：&nbsp;&nbsp;</td>
+							<td><input name="cooperOther" id="cooperOther"
+								style="width: 15%; height: 25px" readonly="readonly">
+							</td>
+						</tr>
+						<tr>
+							<td style="width: 20%; text-align: right;">7、我方最可能中标的角色是：&nbsp;&nbsp;</td>
+							<td><input name="winRole" id="winRole"
+								style="width: 15%; height: 25px" readonly="readonly">
+							</td>
+						</tr>
+						<tr>
+							<td style="width: 20%; text-align: right;">8、项目硬件平台：&nbsp;&nbsp;</td>
+							<td colspan="2"><textarea style="width: 50%;" rows="3"
+									id="hardware" placeholder="项目硬件平台" readonly="readonly"></textarea></td>
+						</tr>
+						<tr>
+							<td style="width: 20%; text-align: right;">9、项目技术平台：&nbsp;&nbsp;</td>
+							<td colspan="2"><textarea style="width: 50%;" rows="3"
+									id="technology" placeholder="项目的技术平台简要描述" readonly="readonly"></textarea></td>
+						</tr>
+						<tr>
+							<td style="width: 20%; text-align: right;">10、项目云平台：&nbsp;&nbsp;</td>
+							<td colspan="2"><textarea style="width: 50%;" rows="3"
+									id="cloud" placeholder="如果项目需要上云，云平台简要描述" readonly="readonly"></textarea></td>
+						</tr>
+						<tr>
+							<td style="width: 20%; text-align: right;">11、项目大数据平台：&nbsp;&nbsp;</td>
+							<td><textarea style="width: 50%;" rows="3" id="bigdata"
+									placeholder="如果项目需要用到大数据，大数据平台简要描述" readonly="readonly"></textarea></td>
+						</tr>
+						<tr>
+							<td style="width: 20%; text-align: right;">12、交流时间：&nbsp;&nbsp;</td>
+							<td><input name="extTime" id="extTime" style="width: 50%; height: 30px;" readonly="readonly">
+							</td>
+						</tr>
+						<tr>
+							<td style="width: 20%; text-align: right;">13、交流地点：&nbsp;&nbsp;</td>
+							<td><input name="extAddr" id="extAddr" style="width: 50%; height: 30px;" readonly="readonly">
+							</td>
+						</tr>
+						<tr>
+							<td style="width: 20%; text-align: right;">14、选择参与人：<font color="red">*</font>&nbsp;&nbsp;</td>
+							<td>
+								<input id="extOwnerText" name="extOwnerText" type="text" style="width: 50%; height: 30px;" placeholder="选择我方参与人（必填）">
+							</td>
+						</tr>
+						<!-- <tr>
+							<td style="width: 20%; text-align: right;">15、审批意见：<font color="red">*</font>&nbsp;&nbsp;</td>
+							<td>
+								<textarea id="extOpinion" name="extOpinion" style="width: 50%;" rows="3"  placeholder="请填写审批意见（必填）"></textarea>
+							</td>
+						</tr> -->
+						<tr>
+							<td style="width: 20%; text-align: center;">&nbsp;&nbsp;</td>
+							<td style="width: 50%; font-size: 14px;">
+								<input type="hidden" id="aid">
+								<input type="hidden" name="extOwner" id="extOwner">
+								<button class="layui-btn layui-btn-small"
+									onclick="approval('1')">
+									<i class="layui-icon">&#xe616;</i> 同意
+								</button>
+								<button class="layui-btn layui-btn-small"
+									onclick="approval('0')">
+									<i class="layui-icon">&#x1007;</i> 拒绝
+								</button>
+							</td>
+						</tr>
+					</table>
+				</ul>
+			</fieldset>
+		</div>
+	</div>
+	<div id="extOwnerDiv" style="display:none"></div>
+	<div id="opinionPage" style="display:none">
+		<textarea id= "approvalOpinion" placeholder="请输入。。。。" style="margin-left:10px;width:280px;height:95%;"></textarea>
+	</div>
+	<script type="text/javascript" src="../plugins/layui/layui.js"></script>
+	<script src="../js/jquery-1.8.1.min.js" type="text/javascript"></script>
+	<script src="../js/sale/sale-new-meeting-detail.js" type="text/javascript"></script>
+	<script>
+		var layer;
+		layui.config({
+			base : '../../plugins/layui/modules/'
+		});
+		layui.use([ 'form', 'layer', 'laydate' ], function() {
+			var form = layui.form(), layer = layui.layer;
+		});
+		function boxToTop(){
+			var top=$("#laydate_box").css("top").replace("px",'');
+			$("#laydate_box").css("top",Number(top)-246+'px');
+		}
+	</script>
+</body>
+
+</html>

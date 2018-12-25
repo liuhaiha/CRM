@@ -1,0 +1,212 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<html>
+  <head>
+    <title>客户关系管理系统</title>
+	
+  <meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <link rel="stylesheet" href="plugins/layui/css/layui.css" media="all" />
+	<link rel="stylesheet" href="css/login.css" />
+	<script src="js/jquery-1.8.1.min.js" type="text/javascript"></script>
+	
+
+  </head>
+  
+ <body class="beg-login-bg">
+		<div class="beg-login-box">
+			<header>
+				<h1>客户关系管理系统</h1>
+			</header>
+			<div class="beg-login-main">
+				<form id="loginform" name="loginform" class="layui-form" method="post"><input name="__RequestVerificationToken" type="hidden" value="fkfh8D89BFqTdrE2iiSdG_L781RSRtdWOH411poVUWhxzA5MzI8es07g6KPYQh9Log-xf84pIR2RIAEkOokZL3Ee3UKmX0Jc8bW8jOdhqo81" />
+					<div class="layui-form-item">
+						<label class="beg-login-icon">
+                        <i class="layui-icon">&#xe612;</i>
+                    </label>
+						<input type="text" name="uname" id="uname" lay-verify="userName" autocomplete="new-password" placeholder="这里输入登录名" class="layui-input">
+					</div>
+					<div class="layui-form-item">
+						<label class="beg-login-icon">
+                        <i class="layui-icon">&#xe642;</i>
+                    </label>
+						<input type="password" name="upass" id="upass" lay-verify="password" autocomplete="new-password" placeholder="这里输入密码" class="layui-input">
+					</div>
+					<div class="layui-form-item">
+						<div class="beg-pull-left beg-login-remember">
+							<label></label>
+							<input type="text" name="checkcode" id="checkcode" lay-verify="checkcode" autocomplete="off" placeholder="请输入验证码" class="layui-input" style="width:180px;">
+							
+						</div>
+						<div class="beg-pull-right">
+							<img alt="点击刷新" title="点击刷新" id="codeImg" src="user/code">
+						</div>
+					</div>
+					
+					<div class="layui-form-item">
+						<div class="beg-pull-left beg-login-remember">
+							<label>记住帐号？</label>
+							<input type="checkbox" name="rememberMe" id="rememberMe" value="true" lay-skin="switch" checked title="记住帐号">
+						</div>
+						<div class="beg-pull-right">
+							<button class="layui-btn layui-btn-primary" lay-submit lay-filter="login" >
+                            <i class="layui-icon">&#xe650;</i> 登录
+                        </button>
+						</div>
+						<div class="beg-clear"></div>
+					</div>
+				</form>
+			</div>
+			<footer>
+				<p style="white-space:nowrap;margin-left:20px;">2018 &copy; 天源迪科信息技术股份有限公司</p>
+			</footer>
+		</div>
+		<script type="text/javascript" src="plugins/layui/layui.js"></script>
+		<script type="text/javascript" src="js/common.js"></script>
+		<script type="text/javascript" src="plugins/encrypt/pidcrypt.js"></script>
+		<script type="text/javascript" src="plugins/encrypt/sha256.js"></script>
+		<script>
+			layui.use(['layer', 'form'], function() {
+				var layer = layui.layer,
+					$ = layui.jquery,
+					form = layui.form();
+					
+				form.on('submit(login)',function(data){
+					
+					slogin();
+					return false;
+				});
+			});
+			
+			function slogin()
+			{
+				var uname = $("#uname").val();
+				if(uname=='')
+				{
+					tip("用户名不能为空");
+					return false;
+				}
+				
+				var upass = $("#upass").val();
+				if(upass=='')
+				{
+					tip("密码不能为空");
+					return false;
+				}
+				
+				var checkcode = $("#checkcode").val();
+				if (checkcode == "" ||  $.trim(checkcode).length !=4)
+				{
+					tip("请输入4位验证码");
+					return false;
+				}
+				upass=pidCrypt.SHA256(upass);
+				
+				$.ajax({
+				      async: true,
+					  type: 'POST',
+					  url: 'user/login?t=' + Math.random(),
+					  data:{"uname":uname,"upass":upass, "checkcode":checkcode},
+					  dataType: 'json',
+					  timeout: 60000,
+					  success:function(code){
+						  if ("0" == code)
+						  {
+							  tip("验证码错误");
+							  $("#checkcode").val("")
+						  }
+						  else if ("1" == code)
+						  {
+							  if ($("#rememberMe").attr("checked"))//记住用户名
+							  {
+								  var exdate = new Date();
+								  exdate.setDate(exdate.getDate()+1);
+								  document.cookie="uname=" + uname + ";expires=" + exdate.toGMTString();
+							  }
+							  else //不记住用户名
+							  {
+								  var exp = new Date();
+								  exp.setTime(exp.getTime()-1);
+								  var value =getCookie("uname");
+								  document.cookie="uname=" + value + ";expires=" + exp.toGMTString();
+							  }
+							  
+							  location.href="index.html";
+						  }
+						  else if ("2" == code)
+						  {
+							  tip("用户已停用");
+						  }
+						  else if ("3" == code)
+						  {
+							  tip("用户已锁定");
+						  }
+						 else
+						 {
+							 tip('登录失败');
+							 $("#checkcode").val("");
+						 }
+						  $("#codeImg").click();
+					  },error:function(XMLHttpRequest, textStatus, errorThrown) {
+					   	  alert('系统错误,请联系系统管理员');
+					   	  return false;
+					  }
+				    }); 
+			}
+			
+			function tip(msg)
+			{
+				layer.open({
+			        type: 1
+			        ,offset: 'auto'
+			        ,id: 'layerDemo'
+			        ,content: '<div style="padding: 20px 100px;">'+ msg +'</div>'
+			        ,btn: '确认'
+			        ,btnAlign: 'c' //按钮居中
+			        ,shade: 0 //不显示遮罩
+			        ,yes: function(){
+			          layer.closeAll();
+			        }
+			      });
+			}
+			
+			
+			$(document).ready(function(){
+				$("#codeImg").click(function(){
+				this.src = this.src + "?num=" + Math.random();
+			});
+				
+				initUname();
+			});
+			
+			function initUname()
+			{
+				$("#uname").val(getCookie("uname"));
+			}
+			
+			function getCookie(name)
+			{
+				var search = name + "=";
+				var value = "";
+				if (document.cookie.length > 0)
+				{
+					var idx = document.cookie.indexOf(search);
+					if (idx != -1)
+					{
+						idx+=search.length;
+						var end = document.cookie.indexOf(";",idx);
+						if (end == -1)
+						{
+							end = document.cookie.length;
+						}
+						value = document.cookie.substring(idx,end);
+					}
+				}
+				return value;
+			}
+			
+			
+			
+		</script>
+  </body>
+</html>

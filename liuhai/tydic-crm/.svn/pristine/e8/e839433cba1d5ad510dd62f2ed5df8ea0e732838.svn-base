@@ -1,0 +1,294 @@
+/*
+ * 文 件 名:  EmployeeController.java
+ * 版    权:   Tydic Copyright 2018,  All rights reserved
+ * 描    述:  <描述>
+ * 创 建 人:  wlhuang
+ * 修 改 人:  
+ * 修改时间:  
+ * 修改内容:  <修改内容>
+ */
+package com.tydic.traffic.crm.controller;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import org.apache.ibatis.annotations.Param;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import com.tydic.traffic.crm.common.cache.SysCodeCache;
+import com.tydic.traffic.crm.entity.TCrmCustomer;
+import com.tydic.traffic.crm.entity.TSysEmployee;
+import com.tydic.traffic.crm.service.TSysEmployeeService;
+import com.tydic.traffic.crm.utils.CommonUtil;
+import com.tydic.traffic.crm.vo.EmployeeVo;
+import com.tydic.traffic.crm.vo.SysCodeVo;
+import com.tydic.traffic.crm.vo.TreeNode;
+import com.tydic.traffic.crm.vo.UserInfo;
+import com.tydic.traffic.tafa.daf.page.Page;
+import com.tydic.traffic.tafa.web.JsonResult;
+
+/**
+ * 
+ * EmployeeController
+ * @desc 员工处理类
+ * @author wlhuang
+ * @version V1.0 2018年7月21日
+ * @since V1.0
+ */
+@Controller
+@RequestMapping("/employee")
+public class EmployeeController extends BaseController
+{
+	@Autowired
+	private TSysEmployeeService sysEmployeeService;
+	
+	/**
+	 * 跳转到个人信息页面
+	 * @return
+	 */
+	@RequestMapping("/toEmpInfo")
+	public String toEmpInfo()
+	{
+		return "personal/info/info";
+	}
+	
+	/**
+	 * 获取个人档案信息
+	 * @return
+	 */
+	@RequestMapping("/getEmpInfo")
+	@ResponseBody
+	public JsonResult getEmpInfo()
+	{
+		UserInfo user = super.getUser();
+		TSysEmployee emp = sysEmployeeService.getEmployeeInfo(user.getEno());
+		JsonResult result = new JsonResult();
+		result.setCode("1");
+		if (null == emp)
+		{
+			result.setCode("-1");
+		}
+		result.setData(emp);
+		return result;
+	}
+	
+	/**
+	 * 修改个人信息
+	 * @param emp
+	 * @return
+	 */
+	@RequestMapping("/saveInfo")
+	@ResponseBody
+	public JsonResult saveInfo(@ModelAttribute("emp") TSysEmployee emp)
+	{
+		JsonResult result = new JsonResult();
+		UserInfo userInfo = super.getUser();
+		if (null != userInfo) {
+			emp.setModifier(userInfo.getEname());
+		}
+		emp.setModifytime(new Date());
+		int resultCode = sysEmployeeService.updateInfo(emp);
+		result.setCode(resultCode+"");
+		return result;
+	}
+	
+	/**
+	 * 跳转到员工列表页面
+	 * @return
+	 */
+	@RequestMapping("/toEmpList")
+	public String toEmpList()
+	{
+		return "sys/employee/emp_list";
+	}
+	
+	/**
+	 * 查询员工列表
+	 * @param pageNumber
+	 * @param pageSize
+	 * @param worklog
+	 * @return
+	 */
+	@PostMapping("/queryEmpByPage")
+	@ResponseBody
+	public Page<EmployeeVo> queryEmpByPage(@Param("pageNumber") Integer pageNumber,
+			@Param("pageSize") Integer pageSize, @ModelAttribute("employee") EmployeeVo employee) {
+		if (null == pageNumber) {
+			pageNumber = 1;
+		}
+		if (null == pageSize) {
+			pageSize = 10;
+		}
+		
+		Page<EmployeeVo> pageResult = new Page<>();
+		pageResult.setPageNo(pageNumber);
+		pageResult.setPageSize(pageSize);
+		sysEmployeeService.listEmpByPage(pageResult, employee);
+		return pageResult;
+	}
+	
+	/**
+	 * 跳转到员工添加页面
+	 * 
+	 * @return
+	 */
+	@RequestMapping("/toEmpAddPage")
+	public String toEmpAddPage(@Param("code") String code) {
+		request.getSession().setAttribute("code", code);
+		return "sys/employee/emp_add";
+	}
+
+	/**
+	 * 跳转到员工编辑页面
+	 * 
+	 * @return
+	 */
+	@RequestMapping("/toEmpEditPage")
+	public String toEmpEditPage(@Param("eid") Integer eid) {
+		request.getSession().setAttribute("eid", eid);
+		return "sys/employee/emp_edit";
+	}
+
+	/**
+	 * 获取员工信息
+	 * @param eid
+	 * @return
+	 */
+	@PostMapping("/getEmpDetail")
+	@ResponseBody
+	public JsonResult getEmpDetail(@Param("eid") Integer eid) {
+		if (CommonUtil.isNull(eid)) {
+			eid = CommonUtil.replaceNullInt(request.getSession().getAttribute("eid"));
+		}
+		JsonResult result = new JsonResult();
+		TSysEmployee emp = sysEmployeeService.geEmp(eid);
+		result.setData(emp);
+		result.setCode(null == emp ? "0" : "1");
+		return result;
+	}
+
+	/**
+	 * 修改或新增员工信息
+	 * @param emp
+	 * @return
+	 */
+	@PostMapping("/saveOrUpdWorkEmp")
+	@ResponseBody
+	public JsonResult saveOrUpdWorkEmp(@ModelAttribute("emp") TSysEmployee emp) {
+		
+		JsonResult result = new JsonResult();
+		boolean saveResult = false;
+		if (CommonUtil.isNotNull(emp.getEid())) {
+			UserInfo userInfo = super.getUser();
+			if (null != userInfo) {
+				emp.setModifier(userInfo.getEno());
+			}
+			emp.setModifytime(new Date());
+			saveResult = sysEmployeeService.modEmo(emp);
+		} else {
+			// 检查员工添加是否存在
+			boolean isExist = sysEmployeeService.isExistEmp(emp.getEno());
+			if (isExist)
+			{
+				result.setCode("-1");
+				return result;
+			}
+			
+			UserInfo userInfo = super.getUser();
+			if (null != userInfo) {
+				emp.setCreator(userInfo.getEname());
+				emp.setModifier(userInfo.getEno());
+			}
+			String dno = (String) request.getSession().getAttribute("code");
+			emp.setDno(dno);
+			emp.setCreatetime(new Date());
+			emp.setModifytime(emp.getCreatetime());
+			saveResult = sysEmployeeService.addEmp(emp);
+		}
+		result.setCode(saveResult ? "1" : "0");
+		return result;
+	}
+
+	@PostMapping("/delEmp")
+	@ResponseBody
+	public JsonResult delEmp(@Param("eids") String eids) {
+		JsonResult result = new JsonResult();
+		boolean succ = sysEmployeeService.delEmp(eids);
+		result.setCode(succ ? "1" : "-1");
+		return result;
+	}
+	
+	/**
+	 * 树形菜单
+	 * @return
+	 */
+	@RequestMapping("/list")
+	@ResponseBody
+	public List<TreeNode> findCustomList() {
+		List<TreeNode> treeList = new ArrayList<TreeNode>();
+		SysCodeVo sysCode = SysCodeCache.getSysCode(SysCodeCache.CODE_DEPT);
+		if (sysCode != null) {
+			List<SysCodeVo> childList = sysCode.getChildList();
+			for (int i = 0,len = CommonUtil.getLen(childList); i < len; i++)
+			{
+				SysCodeVo code = childList.get(i);
+				TreeNode parentNode = convert(code);
+				parentNode.setLevel(1);
+				List<TreeNode> list = getChild(parentNode,code);
+				parentNode.setChildren(list);
+				treeList.add(parentNode);
+			}
+			//addCustNode(treeList);
+		}
+		return treeList;
+	}
+	
+	/**
+	 * 节点转换
+	 * @param code
+	 * @return
+	 */
+	private TreeNode convert(SysCodeVo code)
+	{
+		TreeNode node =  new TreeNode();
+		node.setId(code.getCid() + "");
+		node.setAlias(code.getCode());
+		node.setName(code.getName());
+		node.setSpread(true);
+		node.setPid(code.getPid());
+		return node;
+	}
+	
+	/**
+	 * 获取子节点状态
+	 * @param parent
+	 * @param sysCode
+	 * @return
+	 */
+	private List<TreeNode> getChild(TreeNode parent,SysCodeVo sysCode)
+	{
+		if (CommonUtil.getLen(sysCode.getChildList()) == 0)
+		{
+			return null;
+		}
+		
+		List<SysCodeVo> codeChildList = sysCode.getChildList();
+		List<TreeNode> treeChildList = new ArrayList<>();
+		for (SysCodeVo code:codeChildList)
+		{
+			TreeNode child = convert(code);
+			child.setPcode(parent.getAlias());
+			child.setLevel(parent.getLevel()+1);
+			treeChildList.add(child);
+			List<TreeNode> list = getChild(child,code);
+			child.setChildren(list);
+		}
+		return treeChildList;
+	}
+}

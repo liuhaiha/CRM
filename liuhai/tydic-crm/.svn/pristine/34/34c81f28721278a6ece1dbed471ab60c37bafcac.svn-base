@@ -1,0 +1,524 @@
+package com.tydic.traffic.crm.controller;
+
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.ibatis.annotations.Param;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.tydic.traffic.crm.common.cache.SysCodeCache;
+import com.tydic.traffic.crm.dao.TCrmCustomerMapper;
+import com.tydic.traffic.crm.dao.TCrmExtApplyMapper;
+import com.tydic.traffic.crm.dao.TCrmProjectMapper;
+import com.tydic.traffic.crm.entity.TCrmCustomer;
+import com.tydic.traffic.crm.entity.TCrmExtApply;
+import com.tydic.traffic.crm.entity.TCrmExtCust;
+import com.tydic.traffic.crm.entity.TCrmLinkman;
+import com.tydic.traffic.crm.entity.TCrmProject;
+import com.tydic.traffic.crm.entity.TSysEmployee;
+import com.tydic.traffic.crm.service.SaleService;
+import com.tydic.traffic.crm.utils.CommonUtil;
+import com.tydic.traffic.crm.vo.SysCodeVo;
+import com.tydic.traffic.crm.vo.TCrmExtApplyVo;
+import com.tydic.traffic.crm.vo.TreeNode;
+import com.tydic.traffic.crm.vo.UserInfo;
+import com.tydic.traffic.tafa.web.JsonResult;
+
+import springfox.documentation.spring.web.json.Json;
+
+/*
+ * 文 件 名:  SaleController.java
+ * 版    权:   Tydic Copyright 2018,  All rights reserved
+ * 描    述:  <描述>
+ * 创 建 人:  liuhai
+ * 修 改 人:  
+ * 修改时间:  
+ * 修改内容:  <修改内容>
+ */
+@Controller
+@RequestMapping("/sale")
+public class SaleController extends BaseController {
+	@Autowired
+	private SaleService saleService;
+	
+	@Autowired
+	TCrmProjectMapper tCrmProjectMapper;
+	@Autowired
+	TCrmCustomerMapper tCrmCustomerMapper;
+	@Autowired
+	TCrmExtApplyMapper tCrmExtApplyMapper;
+	
+	/**
+	 * 获取数据字典客户来源
+	 * 传入参数：类型category
+	 */
+	@RequestMapping("/customerSource")
+	@ResponseBody
+	public String getCustomerSource(Integer type){
+		return saleService.getCustomerSource();
+	}
+	/**
+	 * 获取数据字典客户类型
+	 * 传入参数：类型category
+	 */
+	@RequestMapping("/customerCategory")
+	@ResponseBody
+	public String getCustomerCategory(Integer type){
+		return saleService.getCustomerCategory();
+	}
+	/**
+	 * 获取数据字典客户区域
+	 * 传入参数：类型category
+	 */
+	@RequestMapping("/customerArea")
+	@ResponseBody
+	public String getCustomerArea(Integer type){
+		return saleService.getCustomerArea();
+	}
+	/**
+	 * 获取数据字典联系人性别
+	 * 传入参数：类型category
+	 */
+	@RequestMapping("/linkManSex")
+	@ResponseBody
+	public String getSex(Integer type){
+		return saleService.getSex();
+	}
+	/**
+	 * 获取数据字典联系人部门
+	 * 传入参数：类型category
+	 */
+	@RequestMapping("/linkManDept")
+	@ResponseBody
+	public String getDept(Integer type){
+		return saleService.getDept();
+	}
+	/**
+	 * 获取数据字典联系人一级部门
+	 * 传入参数：类型category
+	 */
+	@RequestMapping("/linkManSuperDept")
+	@ResponseBody
+	public String getSuperDept(Integer type){
+		return saleService.getSuperDept();
+	}
+	/**
+	 * 获取数据字典联系人职位
+	 * 传入参数：类型category
+	 */
+	@RequestMapping("/linkManPost")
+	@ResponseBody
+	public String getPost(Integer type){
+		return saleService.getPost();
+	}
+	/**
+	 * 获取数据字典交流重点
+	 */
+	@RequestMapping("/extImport")
+	@ResponseBody
+	public String getExtImport(){
+		return saleService.getExtImport();
+	}
+	/**
+	 * 获取数据字典交流主题
+	 */
+	@RequestMapping("/extTheme")
+	@ResponseBody
+	public String getExtTheme(){
+		return saleService.getExtTheme();
+	}
+	/**
+	 * 获取数据字典项目阶段
+	 */
+	@RequestMapping("/itemStage")
+	@ResponseBody
+	public String getItemStage(){
+		return saleService.getItemStage();
+	}
+	/**
+	 * 获取数据字典审批人
+	 */
+	@RequestMapping("/apprMan")
+	@ResponseBody
+	public String getApprMan(){
+		return saleService.getApprMan();
+	}
+	/**
+	 * 保存客户部分信息
+	 * @return 
+	 */
+	@RequestMapping("/saveCustomerInfo")
+	@ResponseBody
+	public String saveCustomerInfo(TCrmCustomer tCrmCustomer){
+		String num = null;
+		try{
+			UserInfo user = super.getUser();
+			if (CommonUtil.isNotNull(tCrmCustomer.getCid()))
+			{
+				tCrmCustomer.setModifier(user.getEname());
+				tCrmCustomer.setModifytime(new Date());
+				tCrmCustomer.setCreator(user.getEname());
+				tCrmCustomer.setCreatetime(new Date());
+			}
+			else
+			{
+				tCrmCustomer.setCreator(user.getEname());
+				tCrmCustomer.setCreatetime(new Date());
+			}
+			num = saleService.saveCustomerInfo(tCrmCustomer);
+		}catch(Exception e){
+		}
+		return num;
+	}
+	/**
+	 * 保存参会人员信息
+	 */
+	@RequestMapping(value="/saveTCrmExtCust")
+	@ResponseBody
+	public TCrmExtCust saveTCrmExtCust(@RequestBody TCrmExtCust tCrmExtCust){
+		UserInfo user = super.getUser();
+		tCrmExtCust.setCreator(user.getEname());
+		tCrmExtCust.setCreatetime(new Date());
+		tCrmExtCust.setModifier(user.getEname());
+		tCrmExtCust.setModifytime(new Date());
+		return saleService.saveTCrmExtCust(tCrmExtCust);
+	}
+	/**
+	 * 保存参会人员为客户联系人
+	 */
+	@RequestMapping("/saveLinkManInfo")
+	@ResponseBody
+	public TCrmLinkman saveLinkManInfo(@RequestBody TCrmLinkman tCrmLinkman){
+		TCrmLinkman saveResult = null;
+		try{
+			UserInfo user = super.getUser();
+			tCrmLinkman.setCreator(user.getEname());
+			tCrmLinkman.setCreatetime(new Date());
+			tCrmLinkman.setModifier(user.getEname());
+			tCrmLinkman.setModifytime(new Date());
+			saveResult =saleService.saveLinkManInfo(tCrmLinkman);
+		}catch(Exception e){
+			
+		}
+		return saveResult;
+	}
+	/**
+	 * 获取成功新增的联系人
+	 */
+	@RequestMapping("/getTCrmExtCust")
+	@ResponseBody
+	public TCrmExtCust getTCrmExtCust(@Param("extcustid") Integer extcustid){
+		TCrmExtCust tCrmExtCust = saleService.getTCrmExtCust(extcustid);
+		return tCrmExtCust;
+	}
+	/**
+	 * 修改时获取与会人信息
+	 */
+	@RequestMapping("/editTCrmLinkman")
+	@ResponseBody
+	public String editTCrmLinkman(@Param("checkid") Integer checkid){
+		return saleService.editTCrmLinkman(checkid);
+	}
+	/**
+	 * 修改后保存与会人信息
+	 */
+	@RequestMapping("/editTCrmExtCustInfo")
+	@ResponseBody
+	public TCrmExtCust editTCrmExtCustInfo(@ModelAttribute("tCrmExtCust") TCrmExtCust tCrmExtCust){
+		UserInfo user = super.getUser();
+		if (null != user)
+		{
+			tCrmExtCust.setModifier(user.getEname());
+			tCrmExtCust.setModifytime(new Date());
+		}
+		return saleService.editTCrmExtCustInfo(tCrmExtCust);
+	}
+	
+	/**
+	 * 删除与会人员
+	 */
+	@PostMapping("/delTCrmExtCust")
+	@ResponseBody
+	public JsonResult delTCrmExtCust(@Param("checkids") String checkids) {
+		JsonResult result = new JsonResult();
+		boolean succ = saleService.delTCrmExtCust(checkids);
+		result.setCode(succ ? "1" : "-1");
+		return result;
+	}
+	
+	/**
+	 * 已有项目，保存项目
+	 */
+	@RequestMapping(value = "/saveTCrmProject")
+	@ResponseBody
+	public String saveTCrmProject(@ModelAttribute("tCrmProject") TCrmProject tCrmProject){
+		String num = null;
+		try{
+			UserInfo user = super.getUser();
+			tCrmProject.setCreator(user.getEname());
+			tCrmProject.setCreatetime(new Date());
+			tCrmProject.setModifier(user.getEname());
+			tCrmProject.setModifytime(new Date());
+			num =saleService.saveTCrmProject(tCrmProject);
+		}catch(Exception e){
+			
+		}
+		return num;
+	}
+	/**
+	 * 保存与客户交流整体信息
+	 * @throws ParseException 
+	 */
+	@RequestMapping(value="/saveTCrmExtApplyInfo")
+	@ResponseBody
+	public String saveTCrmExtApplyInfo(@ModelAttribute("tCrmExtApply") TCrmExtApplyVo tCrmExtApply){
+		String num = null;
+		if(tCrmExtApply.getAtype().equals("02")) {
+			tCrmExtApply.setCname(tCrmCustomerMapper.selectByPrimaryKey(tCrmExtApply.getCid()).getCname());
+			tCrmExtApply.setAddr(tCrmCustomerMapper.selectByPrimaryKey(tCrmExtApply.getCid()).getAddr());
+			tCrmExtApply.setRegion(tCrmCustomerMapper.selectByPrimaryKey(tCrmExtApply.getCid()).getRegion());
+			tCrmExtApply.setSource(tCrmCustomerMapper.selectByPrimaryKey(tCrmExtApply.getCid()).getResource());
+			tCrmExtApply.setProvince(tCrmCustomerMapper.selectByPrimaryKey(tCrmExtApply.getCid()).getProvince());
+			tCrmExtApply.setUnitType(tCrmCustomerMapper.selectByPrimaryKey(tCrmExtApply.getCid()).getUnitType());
+		}
+		UserInfo user = super.getUser();
+		tCrmExtApply.setApplyNo(user.getEno());
+		tCrmExtApply.setApplyName(user.getEname());
+		tCrmExtApply.setApplyTime(new Date());
+		num = saleService.saveTCrmExtApplyInfo(tCrmExtApply);
+		return num;
+	}
+	/***
+	 * 根据id获取项目信息
+	 * @param checkId
+	 */
+	@RequestMapping("/getProject")
+	@ResponseBody
+	public TCrmProject getProject(@Param("checkId") Integer checkId) {
+		return tCrmProjectMapper.selectByPrimaryKey(checkId);
+	}
+	/***
+	 * 获取全部项目信息
+	 */
+//	@RequestMapping("/getAllProject")
+//	@ResponseBody
+//	public List<TCrmProject> getAllProject() {
+//		return (List<TCrmProject>) tCrmProjectMapper.selectAll();
+//	}
+	
+	/***
+	 * 获取客户信息
+	 * @param custId
+	 */
+	@RequestMapping("/getCustomer")
+	@ResponseBody
+	public TCrmCustomer getCustomer(@Param("custId") Integer custId) {
+		return tCrmCustomerMapper.selectByPrimaryKey(custId);
+	}
+	
+	/***
+	 * @param custId
+	 */
+	@RequestMapping("/getApplyDetail")
+	@ResponseBody
+	public List<Object> getApplyDetail() {
+		int aid = CommonUtil.replaceNullInt(request.getSession().getAttribute("aid"));
+		request.getSession().removeAttribute("aid");
+		return saleService.getApplyDetail(aid);
+	}
+	
+	@RequestMapping("/toApproval")
+	@ResponseBody
+	public ModelAndView toApproval(@Param("aid") int aid){
+		List<Object> list = saleService.getApplyDetail(aid);
+		TCrmExtApply  apply = null;
+		if (CommonUtil.getLen(list) > 0)
+		{
+			apply = (TCrmExtApply)list.get(0);
+		}
+		request.getSession().setAttribute("aid", aid);
+		if (null != apply)
+		{
+			if ("01".equals(apply.getAtype()))
+			{
+				return new ModelAndView("sale/sale-new-meeting-approval");
+			}
+			else
+			{
+				return new ModelAndView("sale/sale-meeting-approval");
+			}
+		}
+		return null;
+	}
+	
+	@RequestMapping("/approval")
+	@ResponseBody
+	public JsonResult approval(@ModelAttribute("tCrmExtApply") TCrmExtApply tCrmExtApply) {
+		JsonResult result = new JsonResult();
+		boolean appResult = saleService.approval(tCrmExtApply);
+		result.setCode(appResult?"1":"0");
+		return result;
+	}
+	
+	@RequestMapping("/getProDetail")
+	@ResponseBody
+	public JsonResult getProDetail(@Param("pid") int pid){
+		JsonResult result = new JsonResult();
+		TCrmProject project = saleService.getProDetail(pid);
+		result.setData(project);
+		result.setCode(project != null?"1":"0");
+		return result;
+	}
+	
+	@RequestMapping("/viewDetail")
+	@ResponseBody
+	public ModelAndView viewDetail(@Param("aid") int aid){
+		TCrmExtApply  apply = tCrmExtApplyMapper.selectByPrimaryKey(aid);
+		request.getSession().setAttribute("aid", aid);
+		if (null != apply)
+		{
+			if ("01".equals(apply.getAtype()))
+			{
+				return new ModelAndView("sale/sale-new-meeting-detail");
+			}
+			else
+			{
+				return new ModelAndView("sale/ext-detail");
+			}
+		}
+		return null;
+	}
+	
+	@RequestMapping("/getEmp")
+	@ResponseBody
+	public List<TreeNode> getEmp(){
+		List<TreeNode> empList = new ArrayList<TreeNode>();
+		SysCodeVo syscode = SysCodeCache.getSysCode(SysCodeCache.CODE_BM);
+		if(syscode !=null){
+			List<SysCodeVo> codeList = syscode.getChildList();
+			TreeNode firNode = new TreeNode();
+			firNode.setName(syscode.getName());
+			firNode.setId(syscode.getCid()+"_"+syscode.getName() + "_dept");
+			firNode.setLevel(1);
+			firNode.setAlias(String.valueOf(syscode.getPid()));
+			List<TreeNode> list = new ArrayList<TreeNode>();
+			for(SysCodeVo code : codeList){
+				TreeNode node = convert(code);
+				node.setLevel(firNode.getLevel()+1);
+				List<TreeNode> nodelist = getChild(node,code);
+				node.setChildren(nodelist);
+				list.add(node);
+			}
+			firNode.setChildren(list);
+			empList.add(firNode);
+			addEmpNode(empList);
+		}
+		return empList;
+	}
+	
+	private void addEmpNode(List<TreeNode> treeList)
+	{
+		List<TSysEmployee> empList = saleService.getAllEmp();
+		Map<String, List<TSysEmployee>> empGroup = new HashMap<>();
+		int len = CommonUtil.getLen(empList);
+		for (int i = 0; i < len; i++)
+		{
+			TSysEmployee emp = empList.get(i);
+			String dno = emp.getDno();
+			if (CommonUtil.isNull(dno))
+			{
+				continue;
+			}
+			List<TSysEmployee> list = null;
+			if (null == empGroup.get(dno))
+			{
+				list = new ArrayList<>();
+				empGroup.put(dno, list);
+			}
+			else
+			{
+				list = empGroup.get(dno);
+			}
+			list.add(emp);
+		}
+		List<TreeNode> nodelist = treeList.get(0).getChildren();
+		for (TreeNode BmNode:nodelist)
+		{
+			if (CommonUtil.getLen(BmNode.getChildren()) == 0)
+			{
+				continue;
+			}
+			
+			for (TreeNode bmnode:BmNode.getChildren())
+			{
+				String dno = bmnode.getCode();
+				if (null != empGroup.get(dno))
+				{
+					buildProvTree(bmnode,empGroup.get(dno));
+				}
+			}
+		}
+	}
+	
+	private void buildProvTree(TreeNode bmnode, List<TSysEmployee> emptList)
+	{
+		List<TreeNode> childList = new ArrayList<>();
+		for (int i = 0, len = CommonUtil.getLen(emptList); i < len; i++)
+		{
+			TreeNode node = new TreeNode();
+			TSysEmployee emp = emptList.get(i);
+			node.setId(emp.getEid() + "_" + emp.getEname() + "_" + emp.getEno() + "_emp");
+			node.setName(emp.getEname());
+			node.setCode(emp.getEno());
+			node.setSpread(false);
+			node.setChecked(true);
+			node.setLevel(bmnode.getLevel() + 1);
+			childList.add(node);
+		}
+		
+		bmnode.setChildren(childList);
+	}
+	
+	private TreeNode convert(SysCodeVo code){
+		TreeNode node = new TreeNode();
+		node.setId(code.getCid() +"_" + code.getName() +  "_dept");
+		node.setCode(code.getCode());
+		node.setName(code.getName());
+		node.setSpread(false);
+		node.setPid(code.getPid());
+		node.setChecked(true);
+		return node;
+	}
+	private List<TreeNode> getChild(TreeNode node,SysCodeVo sysCode)
+	{
+		if (CommonUtil.getLen(sysCode.getChildList()) == 0)
+		{
+			return null;
+		}
+		
+		List<SysCodeVo> codeChildList = sysCode.getChildList();
+		List<TreeNode> treeChildList = new ArrayList<>();
+		for (SysCodeVo code:codeChildList)
+		{
+			TreeNode child = convert(code);
+			child.setPcode(node.getAlias());
+			child.setLevel(node.getLevel()+1);
+			treeChildList.add(child);
+			List<TreeNode> list = getChild(child,code);
+			child.setChildren(list);
+		}
+		return treeChildList;
+	}
+	
+}

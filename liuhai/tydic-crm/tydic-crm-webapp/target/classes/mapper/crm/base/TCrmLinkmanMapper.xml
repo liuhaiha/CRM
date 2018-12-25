@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tydic.traffic.crm.dao.TCrmLinkmanMapper">
+  <resultMap id="BaseResultMap" type="com.tydic.traffic.crm.entity.TCrmLinkman">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="lid" jdbcType="INTEGER" property="lid" />
+    <result column="cid" jdbcType="INTEGER" property="cid" />
+    <result column="aid" jdbcType="INTEGER" property="aid" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="sex" jdbcType="VARCHAR" property="sex" />
+    <result column="dept" jdbcType="VARCHAR" property="dept" />
+    <result column="super_dept" jdbcType="VARCHAR" property="superDept" />
+    <result column="post" jdbcType="VARCHAR" property="post" />
+    <result column="officephone" jdbcType="VARCHAR" property="officephone" />
+    <result column="telephone" jdbcType="VARCHAR" property="telephone" />
+    <result column="email" jdbcType="VARCHAR" property="email" />
+    <result column="birthday" jdbcType="TIMESTAMP" property="birthday" />
+    <result column="hobby" jdbcType="CHAR" property="hobby" />
+    <result column="remark" jdbcType="VARCHAR" property="remark" />
+    <result column="extend1" jdbcType="VARCHAR" property="extend1" />
+    <result column="extend2" jdbcType="VARCHAR" property="extend2" />
+    <result column="extend3" jdbcType="VARCHAR" property="extend3" />
+    <result column="extend4" jdbcType="VARCHAR" property="extend4" />
+    <result column="extend5" jdbcType="VARCHAR" property="extend5" />
+    <result column="extend6" jdbcType="VARCHAR" property="extend6" />
+    <result column="creator" jdbcType="VARCHAR" property="creator" />
+    <result column="createtime" jdbcType="TIMESTAMP" property="createtime" />
+    <result column="modifier" jdbcType="VARCHAR" property="modifier" />
+    <result column="modifytime" jdbcType="TIMESTAMP" property="modifytime" />
+    <result column="is_delete" jdbcType="VARCHAR" property="isDelete" />
+  </resultMap>
+  
+  <select id="queryLinkmanList" resultType="com.tydic.traffic.crm.vo.TCrmLinkmanVo">
+     	select lid, cid, name, sex, dept, super_dept as superDept, post, officephone, telephone, email from t_crm_linkman order by modifytime desc
+  </select>
+              
+  <select id="queryLinkmanListById" resultType="com.tydic.traffic.crm.vo.TCrmLinkmanVo" parameterType="java.lang.Integer">
+     	select lid, cid, name, sex, dept, super_dept as superDept, post, officephone, telephone, email from t_crm_linkman
+     	<if test="_parameter !=null and _parameter!=0">
+			where cid=#{cid}
+		</if>
+		and is_delete is null
+		order by modifytime desc
+  </select>
+  
+  <select id="queryLinkmanListByName" resultType="com.tydic.traffic.crm.vo.TCrmLinkmanVo" parameterType="com.tydic.traffic.crm.vo.TCrmLinkmanVo">
+     	select lid, cid, name, sex, dept, super_dept as superDept, post, officephone, telephone, email from t_crm_linkman
+     	<if test="_parameter !=null">
+			where name like '%${name}%'
+		</if>
+		order by modifytime desc
+  </select>
+  
+</mapper>

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tydic.traffic.crm.dao.TCrmExtApplyMapper">
+  <resultMap id="BaseResultMap" type="com.tydic.traffic.crm.entity.TCrmExtApply">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="aid" jdbcType="INTEGER" property="aid" />
+    <result column="atype" jdbcType="VARCHAR" property="atype" />
+    <result column="cid" jdbcType="INTEGER" property="cid" />
+    <result column="cname" jdbcType="VARCHAR" property="cname" />
+    <result column="addr" jdbcType="VARCHAR" property="addr" />
+    <result column="region" jdbcType="VARCHAR" property="region" />
+    <result column="province" jdbcType="VARCHAR" property="province" />
+    <result column="source" jdbcType="VARCHAR" property="source" />
+    <result column="unit_type" jdbcType="VARCHAR" property="unitType" />
+    <result column="ext_important" jdbcType="VARCHAR" property="extImportant" />
+    <result column="ext_theme" jdbcType="VARCHAR" property="extTheme" />
+    <result column="ext_other" jdbcType="VARCHAR" property="extOther" />
+    <result column="status" jdbcType="VARCHAR" property="status" />
+    <result column="pname" jdbcType="VARCHAR" property="pname" />
+    <result column="stage" jdbcType="VARCHAR" property="stage" />
+    <result column="money" jdbcType="REAL" property="money" />
+    <result column="est_invite" jdbcType="TIMESTAMP" property="estInvite" />
+    <result column="period" jdbcType="INTEGER" property="period" />
+    <result column="cooper_other" jdbcType="VARCHAR" property="cooperOther" />
+    <result column="win_role" jdbcType="VARCHAR" property="winRole" />
+    <result column="hardware" jdbcType="VARCHAR" property="hardware" />
+    <result column="technology" jdbcType="VARCHAR" property="technology" />
+    <result column="cloud" jdbcType="VARCHAR" property="cloud" />
+    <result column="bigdata" jdbcType="VARCHAR" property="bigdata" />
+    <result column="apply_no" jdbcType="VARCHAR" property="applyNo" />
+    <result column="apply_name" jdbcType="VARCHAR" property="applyName" />
+    <result column="apply_time" jdbcType="TIMESTAMP" property="applyTime" />
+    <result column="appr_status" jdbcType="VARCHAR" property="apprStatus" />
+    <result column="appr_no" jdbcType="VARCHAR" property="apprNo" />
+    <result column="appr_name" jdbcType="VARCHAR" property="apprName" />
+    <result column="appr_content" jdbcType="VARCHAR" property="apprContent" />
+    <result column="extend1" jdbcType="VARCHAR" property="extend1" />
+    <result column="extend2" jdbcType="VARCHAR" property="extend2" />
+    <result column="extend3" jdbcType="VARCHAR" property="extend3" />
+    <result column="extend4" jdbcType="VARCHAR" property="extend4" />
+    <result column="extend5" jdbcType="VARCHAR" property="extend5" />
+    <result column="extend6" jdbcType="VARCHAR" property="extend6" />
+    <result column="ext_time" jdbcType="TIMESTAMP" property="extTime" />
+    <result column="ext_addr" jdbcType="VARCHAR" property="extAddr" />
+    <result column="ext_owner" jdbcType="VARCHAR" property="extOwner" />
+    <result column="ext_cus" jdbcType="VARCHAR" property="extCus" />
+    <result column="ext_third" jdbcType="VARCHAR" property="extThird" />
+    <result column="pid" jdbcType="INTEGER" property="pid" />
+    <result column="apply_state" jdbcType="VARCHAR" property="applyState" />
+    <result column="approvalOpinion" jdbcType="VARCHAR" property="approvalOpinion" />
+  </resultMap>
+</mapper>

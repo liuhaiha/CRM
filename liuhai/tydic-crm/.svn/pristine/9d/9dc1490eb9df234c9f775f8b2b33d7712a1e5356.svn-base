@@ -1,0 +1,183 @@
+/*
+ * 文 件 名:  TSysRoleServiceImpl.java
+ * 版    权:   Tydic Copyright 2018,  All rights reserved
+ * 描    述:  <描述>
+ * 创 建 人:  wlhuang
+ * 修 改 人:  
+ * 修改时间:  
+ * 修改内容:  <修改内容>
+ */
+package com.tydic.traffic.crm.service.impl;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import javax.annotation.Resource;
+
+import com.tydic.traffic.crm.vo.TSysRoleVo;
+import com.tydic.traffic.tafa.daf.page.Page;
+import com.tydic.traffic.tafa.daf.page.annotion.Pageable;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.alibaba.fastjson.JSON;
+import com.tydic.traffic.crm.dao.TSysEmployeeMapper;
+import com.tydic.traffic.crm.dao.TSysRoleMapper;
+import com.tydic.traffic.crm.dao.TSysRoleRefPermissionMapper;
+import com.tydic.traffic.crm.entity.TCrmExtCust;
+import com.tydic.traffic.crm.entity.TSysEmployee;
+import com.tydic.traffic.crm.entity.TSysRole;
+import com.tydic.traffic.crm.entity.TSysRoleRefPermission;
+import com.tydic.traffic.crm.service.TSysRoleService;
+import com.tydic.traffic.crm.utils.CommonUtil;
+import com.tydic.traffic.tafa.daf.mybatis.tk.entity.Example;
+import com.tydic.traffic.tafa.daf.mybatis.tk.entity.Example.Criteria;
+
+/**
+ * 
+ * TSysRoleServiceImpl
+ * @desc 
+ * @author wlhuang
+ * @version V1.0 2018年8月1日
+ * @since V1.0
+ */
+@Service
+public class TSysRoleServiceImpl implements TSysRoleService {
+
+	private static final Logger logger= LoggerFactory.getLogger(TSysRoleServiceImpl.class); 
+	
+	@Resource
+	private TSysRoleMapper tSysRoleMapper;
+	@Autowired
+	TSysEmployeeMapper tSysEmployeeMapper;
+	@Autowired
+	TSysRoleRefPermissionMapper tSysRoleRefPermissionMapper;
+	
+	public List<TSysRole> queryRole(TSysRole role) {
+		Example example = new Example(TSysRole.class);
+		try
+		{
+			return tSysRoleMapper.selectByExample(example);
+		}
+		catch(Exception ex)
+		{
+			logger.error("查询角色列表时出错,参数={" + (null == role ? "null":role.toString()) + "}", ex);
+		}
+		return null;
+	}
+
+	//获取创建人、修改人列表
+	@Override
+	public String getCreater() {
+		List<TSysEmployee> tSysEmployee = tSysEmployeeMapper.selectAll();
+		return JSON.toJSONString(tSysEmployee);
+		
+	}
+
+	//新增角色
+	@Override
+	public String saveRole(TSysRole tSysRole) {
+		String num = null;
+		tSysRoleMapper.insert(tSysRole);
+		Example example = new Example(TSysRole.class);
+		Criteria c =  example.createCriteria();
+		c.andEqualTo("rname", tSysRole.getRname());
+		c.andEqualTo("rdesc", tSysRole.getRdesc());
+		List<TSysRole> roles = tSysRoleMapper.selectByExample(example);
+		for(TSysRole role : roles){
+			num = String.valueOf(role.getRid());
+		}
+		return num;
+	}
+
+	//根据选中的id删除角色
+	@Override
+	public boolean delRole(String checkids) {
+		if (CommonUtil.isNull(checkids)) {
+			return false;
+		}
+		int num = 0;
+		List<Integer> checkidList = new ArrayList<>();
+		Example example = new Example(TSysRole.class);
+		Example.Criteria c = example.createCriteria();
+
+		try {
+			String[] checkidArray = checkids.split(",");
+			for (String checkid : checkidArray) {
+				checkidList.add(CommonUtil.replaceNullInt(checkid));
+			}
+			c.andIn("rid", checkidList);
+			num = tSysRoleMapper.deleteByExample(example);
+		} catch (Exception ex) {
+		}
+		return num > 0;
+	}
+
+	@Override
+	public boolean editRole(TSysRole tSysRole) {
+		int num = 0;
+		tSysRole.setCreator(tSysRoleMapper.selectByPrimaryKey(tSysRole.getRid()).getCreator());
+		tSysRole.setCreatetime(tSysRoleMapper.selectByPrimaryKey(tSysRole.getRid()).getCreatetime());
+		num = tSysRoleMapper.updateByPrimaryKey(tSysRole);
+		return num > 0;
+	}
+
+	@Pageable
+	public void getRoleByPage(Page<TSysRoleVo> pageResult, TSysRoleVo tSysRoleVo) {
+		List<TSysRoleVo> roleVoList = null;
+		try{
+			if (null != tSysRoleVo.getEndDate())
+			{
+				tSysRoleVo.getEndDate().setTime(tSysRoleVo.getEndDate().getTime() + 1000 * 60 * 60 *24);
+			}
+			roleVoList = tSysRoleMapper.selectByPage(tSysRoleVo);
+			for(TSysRole tSysRole : roleVoList){
+				if(tSysRole.getCreator() == null){
+					tSysRole.setCreator("");
+				}
+				if(tSysRole.getModifier() == null){
+					tSysRole.setModifier("");
+				}
+			}
+		}catch(Exception ex){
+			logger.error("查询角色列表时出错,参数={" + (null == tSysRoleVo ? "null":tSysRoleVo.toString()) + "}", ex);
+		}
+		pageResult.setResults(roleVoList);
+	}
+
+	@Override
+	public boolean permissionManager(String permissionCheckIds, Integer rid) {
+		Example example = new Example(TSysRoleRefPermission.class);
+		Example.Criteria c = example.createCriteria();
+		c.andEqualTo("rid", rid);
+		tSysRoleRefPermissionMapper.deleteByExample(example);
+		int num =0;
+		String[] permissionCheckIdArray = permissionCheckIds.split(",");
+		TSysRoleRefPermission tSysRoleRefPermission = new TSysRoleRefPermission();
+		tSysRoleRefPermission.setRid(rid);
+		for (String permissionCheckId : permissionCheckIdArray) {
+			tSysRoleRefPermission.setId(Integer.parseInt(permissionCheckId));
+			num = tSysRoleRefPermissionMapper.insert(tSysRoleRefPermission);
+		}
+		return num > 0;
+	}
+
+	@Override
+	public List<TSysRoleRefPermission> getPermissionManager(Integer rid) {
+		Example example = new Example(TSysRoleRefPermission.class);
+		Example.Criteria c = example.createCriteria();
+		c.andEqualTo("rid", rid);
+		List<TSysRoleRefPermission> tSysRoleRefPermission = tSysRoleRefPermissionMapper.selectByExample(example);
+		
+ 		return tSysRoleRefPermission;
+	}
+
+
+
+}
+

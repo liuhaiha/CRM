@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tydic.traffic.crm.dao.TSysPermissionMapper">
+  <resultMap id="BaseResultMap" type="com.tydic.traffic.crm.entity.TSysPermission">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="title" jdbcType="VARCHAR" property="title" />
+    <result column="code" jdbcType="VARCHAR" property="code" />
+    <result column="icon" jdbcType="VARCHAR" property="icon" />
+    <result column="url" jdbcType="VARCHAR" property="url" />
+    <result column="pcode" jdbcType="VARCHAR" property="pcode" />
+    <result column="type" jdbcType="CHAR" property="type" />
+    <result column="creator" jdbcType="VARCHAR" property="creator" />
+    <result column="createtime" jdbcType="TIMESTAMP" property="createtime" />
+    <result column="modifier" jdbcType="VARCHAR" property="modifier" />
+    <result column="modifytime" jdbcType="TIMESTAMP" property="modifytime" />
+  </resultMap>
+  
+  <select id="getListCount" resultType="com.tydic.traffic.crm.entity.TSysPermission">
+     	select * from t_sys_permission order by code asc
+  </select>
+  
+  <select id="getListCountByCode" resultType="com.tydic.traffic.crm.entity.TSysPermission" parameterType="java.lang.String">
+     	select * from t_sys_permission
+     	<if test="_parameter !=null and _parameter!=''">
+			where pcode = #{pcode}
+		</if>
+		order by code asc
+  </select>
+  
+  <select id="searchByText" resultType="com.tydic.traffic.crm.entity.TSysPermission" parameterType="com.tydic.traffic.crm.entity.TSysPermission">
+     	select * from t_sys_permission
+     	<if test="_parameter !=null">
+			where title like '%${title}%'
+		</if>
+  </select>
+  
+</mapper>

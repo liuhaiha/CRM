@@ -1,0 +1,427 @@
+{
+  "hints": [],
+  "properties": [
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.access-to-underlying-connection-allowed",
+      "type": "java.lang.Boolean"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.active-connection-stack-trace",
+      "type": "java.util.List<java.lang.String>"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.active-connections",
+      "type": "java.util.Set<com.alibaba.druid.pool.DruidPooledConnection>"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.async-close-connection-enable",
+      "type": "java.lang.Boolean"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.break-after-acquire-failure",
+      "type": "java.lang.Boolean"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.clear-filters-enable",
+      "type": "java.lang.Boolean"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.connect-properties",
+      "type": "java.util.Properties"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.connection-error-retry-attempts",
+      "type": "java.lang.Integer"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.connection-init-sqls",
+      "type": "java.util.Collection<java.lang.String>"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.create-scheduler",
+      "type": "java.util.concurrent.ScheduledExecutorService"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.db-type",
+      "type": "java.lang.String"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.default-auto-commit",
+      "type": "java.lang.Boolean"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.default-catalog",
+      "type": "java.lang.String"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.default-read-only",
+      "type": "java.lang.Boolean"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.default-transaction-isolation",
+      "type": "java.lang.Integer"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.destroy-scheduler",
+      "type": "java.util.concurrent.ScheduledExecutorService"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.driver",
+      "type": "java.sql.Driver"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.driver-class-name",
+      "type": "java.lang.String"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.dup-close-log-enable",
+      "type": "java.lang.Boolean"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.enable",
+      "type": "java.lang.Boolean"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.exception-sorter",
+      "type": "com.alibaba.druid.pool.ExceptionSorter"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.exception-sorter-class-name",
+      "type": "java.lang.String"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.fail-fast",
+      "type": "java.lang.Boolean"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.filter-class-names",
+      "type": "java.util.List<java.lang.String>"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.init-global-variants",
+      "type": "java.lang.Boolean"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.init-variants",
+      "type": "java.lang.Boolean"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.initial-size",
+      "type": "java.lang.Integer"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.keep-alive",
+      "type": "java.lang.Boolean"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.log-abandoned",
+      "type": "java.lang.Boolean"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.log-different-thread",
+      "type": "java.lang.Boolean"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.login-timeout",
+      "type": "java.lang.Integer"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.max-active",
+      "type": "java.lang.Integer"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.max-create-task-count",
+      "type": "java.lang.Integer"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.max-evictable-idle-time-millis",
+      "type": "java.lang.Long"
+    },
+    {
+      "deprecated": true,
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.max-idle",
+      "deprecation": {},
+      "type": "java.lang.Integer"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.max-open-prepared-statements",
+      "type": "java.lang.Integer"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.max-pool-prepared-statement-per-connection-size",
+      "type": "java.lang.Integer"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.max-wait",
+      "type": "java.lang.Long"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.max-wait-thread-count",
+      "type": "java.lang.Integer"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.min-evictable-idle-time-millis",
+      "type": "java.lang.Long"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.min-idle",
+      "type": "java.lang.Integer"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.name",
+      "type": "java.lang.String"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.not-full-timeout-retry-count",
+      "type": "java.lang.Integer"
+    },
+    {
+      "deprecated": true,
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.num-tests-per-eviction-run",
+      "deprecation": {},
+      "type": "java.lang.Integer"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.object-name",
+      "type": "javax.management.ObjectName"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.oracle",
+      "type": "java.lang.Boolean"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.password",
+      "type": "java.lang.String"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.password-callback",
+      "type": "javax.security.auth.callback.PasswordCallback"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.phy-timeout-millis",
+      "type": "java.lang.Long"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.pool-prepared-statements",
+      "type": "java.lang.Boolean"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.pooling-connection-info",
+      "type": "java.util.List<java.util.Map<java.lang.String,java.lang.Object>>"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.proxy-filters",
+      "type": "java.util.List<com.alibaba.druid.filter.Filter>"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.query-timeout",
+      "type": "java.lang.Integer"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.remove-abandoned",
+      "type": "java.lang.Boolean"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.remove-abandoned-timeout",
+      "type": "java.lang.Integer"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.remove-abandoned-timeout-millis",
+      "type": "java.lang.Long"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.reset-stat-enable",
+      "type": "java.lang.Boolean"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.share-prepared-statements",
+      "type": "java.lang.Boolean"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.sql-stat-map",
+      "type": "java.util.Map<java.lang.String,com.alibaba.druid.stat.JdbcSqlStat>"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.stat-data",
+      "type": "java.util.Map<java.lang.String,java.lang.Object>"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.stat-data-for-m-bean",
+      "type": "java.util.Map<java.lang.String,java.lang.Object>"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.stat-logger",
+      "type": "com.alibaba.druid.pool.DruidDataSourceStatLogger"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.test-on-borrow",
+      "type": "java.lang.Boolean"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.test-on-return",
+      "type": "java.lang.Boolean"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.test-while-idle",
+      "type": "java.lang.Boolean"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.time-between-connect-error-millis",
+      "type": "java.lang.Long"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.time-between-eviction-runs-millis",
+      "type": "java.lang.Long"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.time-between-log-stats-millis",
+      "type": "java.lang.Long"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.transaction-query-timeout",
+      "type": "java.lang.Integer"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.transaction-threshold-millis",
+      "type": "java.lang.Long"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.url",
+      "type": "java.lang.String"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.use-global-data-source-stat",
+      "type": "java.lang.Boolean"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.use-local-session-state",
+      "type": "java.lang.Boolean"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.use-oracle-implicit-cache",
+      "type": "java.lang.Boolean"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.use-unfair-lock",
+      "type": "java.lang.Boolean"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.user-callback",
+      "type": "javax.security.auth.callback.NameCallback"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.username",
+      "type": "java.lang.String"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.valid-connection-checker",
+      "type": "com.alibaba.druid.pool.ValidConnectionChecker"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.valid-connection-checker-class-name",
+      "type": "java.lang.String"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.validation-query",
+      "type": "java.lang.String"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.validation-query-timeout",
+      "type": "java.lang.Integer"
+    },
+    {
+      "sourceType": "com.alibaba.druid.pool.DruidDataSource",
+      "name": "crm.datasource.wall-stat-map",
+      "type": "java.util.Map<java.lang.String,java.lang.Object>"
+    }
+  ],
+  "groups": [
+    {
+      "sourceType": "com.tydic.traffic.crm.config.CrmDataSourceConfig",
+      "sourceMethod": "druidDataSource()",
+      "name": "crm.datasource",
+      "type": "com.alibaba.druid.pool.DruidDataSource"
+    }
+  ]
+}

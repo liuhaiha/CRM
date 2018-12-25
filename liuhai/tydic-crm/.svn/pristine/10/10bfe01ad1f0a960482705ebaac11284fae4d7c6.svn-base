@@ -1,0 +1,470 @@
+package com.tydic.traffic.crm.service.impl;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.alibaba.fastjson.JSON;
+import com.tydic.traffic.crm.common.cache.SysCodeCache;
+import com.tydic.traffic.crm.dao.TCrmCustomerMapper;
+import com.tydic.traffic.crm.dao.TCrmExtApplyMapper;
+import com.tydic.traffic.crm.dao.TCrmExtCustMapper;
+import com.tydic.traffic.crm.dao.TCrmLinkmanMapper;
+import com.tydic.traffic.crm.dao.TCrmProjectMapper;
+import com.tydic.traffic.crm.dao.TSysEmployeeMapper;
+import com.tydic.traffic.crm.entity.TCrmCustomer;
+import com.tydic.traffic.crm.entity.TCrmExtApply;
+import com.tydic.traffic.crm.entity.TCrmExtCust;
+import com.tydic.traffic.crm.entity.TCrmLinkman;
+import com.tydic.traffic.crm.entity.TCrmProject;
+import com.tydic.traffic.crm.entity.TSysEmployee;
+import com.tydic.traffic.crm.service.SaleService;
+import com.tydic.traffic.crm.utils.CommonUtil;
+import com.tydic.traffic.crm.vo.SysCodeVo;
+import com.tydic.traffic.crm.vo.TCrmExtApplyVo;
+import com.tydic.traffic.tafa.daf.mybatis.tk.entity.Example;
+import com.tydic.traffic.tafa.utils.uuid.UUIDUtil;
+
+/*
+ * 文 件 名:  SaleServiceImple.java
+ * 版    权:   Tydic Copyright 2018,  All rights reserved
+ * 描    述:  <描述>
+ * 创 建 人:  liuhai
+ * 修 改 人:  
+ * 修改时间:  
+ * 修改内容:  <修改内容>
+ */
+@Service
+public class SaleServiceImple implements SaleService {
+	@Autowired
+	TCrmCustomerMapper tCrmCustomerMapper;
+	@Autowired
+	TCrmExtApplyMapper tCrmExtApplyMapper;
+	@Autowired
+	TSysEmployeeMapper tSysEmployeeMapper;
+	@Autowired
+	TCrmExtCustMapper tCrmExtCustMapper;
+	@Autowired
+	TCrmLinkmanMapper tCrmLinkmanMapper;
+	@Autowired
+	TCrmProjectMapper tCrmProjectMapper;
+	
+	private static final Logger logger= LoggerFactory.getLogger(SaleServiceImple.class); 
+
+	@Override
+	public String getCustomerSource() {
+		// 获取数据字典客户来源
+		SysCodeVo customerSourceSysCodeVo = SysCodeCache.getSysCode("00004");
+		return JSON.toJSONString(customerSourceSysCodeVo.getChildList());
+	}
+
+	@Override
+	public String getCustomerCategory() {
+		// 获取数据字典客户类型
+		SysCodeVo customeCategorySysCodeVo = SysCodeCache.getSysCode("00005");
+		return JSON.toJSONString(customeCategorySysCodeVo.getChildList());
+	}
+
+	@Override
+	public String getCustomerArea() {
+		// 获取数据字典客户区域
+		SysCodeVo customerAreaSysCodeVo = SysCodeCache.getSysCode("00003");
+		return JSON.toJSONString(customerAreaSysCodeVo.getChildList());
+	}
+
+	@Override
+	public String getSex() {
+		SysCodeVo linkManSex = SysCodeCache.getSysCode("00001");
+		return JSON.toJSONString(linkManSex.getChildList());
+	}
+
+	@Override
+	public String getDept() {
+		SysCodeVo linkManDepte = SysCodeCache.getSysCode("00010");
+		return JSON.toJSONString(linkManDepte.getChildList());
+	}
+
+	@Override
+	public String getSuperDept() {
+		SysCodeVo linkManSuperDept = SysCodeCache.getSysCode("00009");
+		return JSON.toJSONString(linkManSuperDept.getChildList());
+	}
+
+	@Override
+	public String getPost() {
+		SysCodeVo linkManPost = SysCodeCache.getSysCode("00011");
+		return JSON.toJSONString(linkManPost.getChildList());
+	}
+
+	@Override
+	public String getApprMan() {
+		// 获得审批人
+		List<TSysEmployee> tSysEmployee = tSysEmployeeMapper.selectAll();
+		return JSON.toJSONString(tSysEmployee);
+	}
+
+	@Override
+	public String getItemStage() {
+		// 获取数据字典项目阶段
+		SysCodeVo itemStage = SysCodeCache.getSysCode("00008");
+		return JSON.toJSONString(itemStage.getChildList());
+	}
+
+	@Override
+	public String getExtImport() {
+		// 获取数据字典交流重点
+		SysCodeVo extImport = SysCodeCache.getSysCode("00013");
+		return JSON.toJSONString(extImport.getChildList());
+	}
+
+	@Override
+	public String getExtTheme() {
+		// 获取交流主题
+		SysCodeVo extTheme = SysCodeCache.getSysCode("00014");
+		return JSON.toJSONString(extTheme.getChildList());
+	}
+
+	// 保存客户信息
+	@Override
+	public String saveCustomerInfo(TCrmCustomer tCrmCustomer) {
+		String num = null;
+		try {
+			if (CommonUtil.replaceNullInt(tCrmCustomer.getCid()).intValue() == 0) {
+				tCrmCustomerMapper.insert(tCrmCustomer);
+				Example example = new Example(TCrmCustomer.class);
+				Example.Criteria c = example.createCriteria();
+				c.andEqualTo("cname", tCrmCustomer.getCname());
+				List<TCrmCustomer> cusList = tCrmCustomerMapper.selectByExample(example);
+				for (TCrmCustomer cusObj : cusList) {
+					num = String.valueOf(cusObj.getCid());
+				}
+			} else {
+				tCrmCustomerMapper.updateByPrimaryKey(tCrmCustomer);
+				num = String.valueOf(tCrmCustomer.getCid());
+			}
+		} catch (Exception ex) {
+
+		}
+		return num;
+	}
+
+	/**
+	 * 新增与会人员信息
+	 */
+	public TCrmExtCust saveTCrmExtCust(TCrmExtCust tCrmExtCust) {
+		try {
+			tCrmExtCust.setExtend1(UUIDUtil.getUUID());
+			tCrmExtCustMapper.insert(tCrmExtCust);
+			Example example = new Example(TCrmExtCust.class);
+			Example.Criteria c = example.createCriteria();
+			c.andEqualTo("extend1", tCrmExtCust.getExtend1());
+			List<TCrmExtCust> custList = tCrmExtCustMapper.selectByExample(example);
+			for (TCrmExtCust cust : custList) {
+				String sexNum = cust.getSex();
+				String sex = SysCodeCache.getCodeText("00001", sexNum);
+				cust.setSex(sex);
+				String deptNum = cust.getDept();
+				String dept = SysCodeCache.getCodeText("00010", deptNum);
+				if (!"".equals(deptNum) && deptNum != null) {
+					cust.setDept(dept);
+				}
+				String superdeptNum = cust.getSuperDept();
+				String superDept = SysCodeCache.getCodeText("00009", superdeptNum);
+				if (!"".equals(superdeptNum) && superdeptNum != null) {
+					cust.setSuperDept(superDept);
+				}
+				String postNum = cust.getPost();
+				String post = SysCodeCache.getCodeText("00011", postNum);
+				if (!"".equals(postNum) && postNum != null) {
+					cust.setPost(post);
+				}
+			}
+			return CommonUtil.getLen(custList) > 0 ? custList.get(0) : null;
+		} catch (Exception ex) {
+			return null;
+		}
+	}
+
+	/**
+	 * 保存为客户联系人前将数据查询返回
+	 */
+	@Override
+	public TCrmExtCust getTCrmExtCust(Integer extcustid) {
+		try {
+			TCrmExtCust tCrmExtCust = tCrmExtCustMapper.selectByPrimaryKey(extcustid);
+			return tCrmExtCust;
+		} catch (Exception ex) {
+			return null;
+		}
+	}
+
+	/**
+	 * 
+	 * 根据 id删除选中的与会人员
+	 * 
+	 */
+	@Override
+	public boolean delTCrmExtCust(String checkids) {
+		if (CommonUtil.isNull(checkids)) {
+			return false;
+		}
+		int num = 0;
+		List<Integer> checkidList = new ArrayList<>();
+		Example example = new Example(TCrmLinkman.class);
+		Example.Criteria c = example.createCriteria();
+
+		try {
+			String[] checkidArray = checkids.split(",");
+			for (String checkid : checkidArray) {
+				checkidList.add(CommonUtil.replaceNullInt(checkid));
+			}
+			c.andIn("lid", checkidList);
+			num = tCrmLinkmanMapper.deleteByExample(example);
+		} catch (Exception ex) {
+		}
+		return num > 0;
+	}
+
+	/**
+	 * 根据id查出所要修改人的信息
+	 */
+	@Override
+	public String editTCrmLinkman(Integer checkid) {
+		TCrmLinkman tCrmLinkman = tCrmLinkmanMapper.selectByPrimaryKey(checkid);
+		return JSON.toJSONString(tCrmLinkman);
+	}
+
+	/**
+	 * 编辑与会人员信息
+	 */
+	@Override
+	public TCrmExtCust editTCrmExtCustInfo(TCrmExtCust tCrmExtCust) {
+		TCrmExtCust trcm = tCrmExtCustMapper.selectByPrimaryKey(tCrmExtCust.getId());
+		try {
+			tCrmExtCust.setCreator(trcm.getCreator());
+			tCrmExtCust.setCreatetime(trcm.getCreatetime());
+			tCrmExtCustMapper.updateByPrimaryKey(tCrmExtCust);
+			TCrmExtCust trcmcust = tCrmExtCustMapper.selectByPrimaryKey(tCrmExtCust.getId());
+			String sexNum = trcmcust.getSex();
+			String sex = SysCodeCache.getCodeText("00001", sexNum);
+			trcmcust.setSex(sex);
+			String deptNum = trcmcust.getDept();
+			String dept = SysCodeCache.getCodeText("00010", deptNum);
+			if (!"".equals(deptNum) && deptNum != null) {
+				trcmcust.setDept(dept);
+			}
+			String superdeptNum = trcmcust.getSuperDept();
+			String superDept = SysCodeCache.getCodeText("00009", superdeptNum);
+			if (!"".equals(superdeptNum) && superdeptNum != null) {
+				trcmcust.setSuperDept(superDept);
+			}
+			String postNum = trcmcust.getPost();
+			String post = SysCodeCache.getCodeText("00011", postNum);
+			if (!"".equals(postNum) && postNum != null) {
+				trcmcust.setPost(post);
+			}
+			return trcmcust;
+		} catch (Exception ex) {
+			return null;
+		}
+	}
+
+	/**
+	 * 保存为客户联系人
+	 */
+	@Override
+	public TCrmLinkman saveLinkManInfo(TCrmLinkman tCrmLinkman) {
+		if (CommonUtil.replaceNullInt(tCrmLinkman.getLid()).intValue() == 0) {
+			tCrmLinkmanMapper.insert(tCrmLinkman);
+			Example example = new Example(TCrmLinkman.class);
+			Example.Criteria c = example.createCriteria();
+			c.andEqualTo("cid", tCrmLinkman.getCid());
+			c.andEqualTo("name", tCrmLinkman.getName());
+			List<TCrmLinkman> tCrmLinks =  tCrmLinkmanMapper.selectByExample(example);
+			for(TCrmLinkman tCrmLink:tCrmLinks){
+				String sexNum = tCrmLink.getSex();
+				String sex = SysCodeCache.getCodeText("00001", sexNum);
+				tCrmLink.setSex(sex);
+				String deptNum = tCrmLink.getDept();
+				String dept = SysCodeCache.getCodeText("00010", deptNum);
+				if (!"".equals(deptNum) && deptNum != null) {
+					tCrmLink.setDept(dept);
+				}
+				String superdeptNum = tCrmLink.getSuperDept();
+				String superDept = SysCodeCache.getCodeText("00009", superdeptNum);
+				if (!"".equals(superdeptNum) && superdeptNum != null) {
+					tCrmLink.setSuperDept(superDept);
+				}
+				String postNum = tCrmLink.getPost();
+				String post = SysCodeCache.getCodeText("00011", postNum);
+				if (!"".equals(postNum) && postNum != null) {
+					tCrmLink.setPost(post);
+				}
+			}
+			return tCrmLinks.get(0);
+		} else {
+			tCrmLinkmanMapper.updateByPrimaryKey(tCrmLinkman);
+			TCrmLinkman tCrmLink = tCrmLinkmanMapper.selectByPrimaryKey(tCrmLinkman.getLid());
+			String sexNum = tCrmLink.getSex();
+			String sex = SysCodeCache.getCodeText("00001", sexNum);
+			tCrmLink.setSex(sex);
+			String deptNum = tCrmLink.getDept();
+			String dept = SysCodeCache.getCodeText("00010", deptNum);
+			if (!"".equals(deptNum) && deptNum != null) {
+				tCrmLink.setDept(dept);
+			}
+			String superdeptNum = tCrmLink.getSuperDept();
+			String superDept = SysCodeCache.getCodeText("00009", superdeptNum);
+			if (!"".equals(superdeptNum) && superdeptNum != null) {
+				tCrmLink.setSuperDept(superDept);
+			}
+			String postNum = tCrmLink.getPost();
+			String post = SysCodeCache.getCodeText("00011", postNum);
+			if (!"".equals(postNum) && postNum != null) {
+				tCrmLink.setPost(post);
+			}
+			return tCrmLink;
+		}
+	}
+
+	/**
+	 * 保存项目
+	 */
+	@Override
+	public String saveTCrmProject(TCrmProject tCrmProject) {
+		String num = null;
+		if (CommonUtil.replaceNullInt(tCrmProject.getPid()).intValue() == 0) {
+			tCrmProjectMapper.insert(tCrmProject);
+			Example example = new Example(TCrmProject.class);
+			Example.Criteria c = example.createCriteria();
+			c.andEqualTo("cid", tCrmProject.getCid());
+			c.andEqualTo("cname", tCrmProject.getShortName());
+			List<TCrmProject> tCrmPros = tCrmProjectMapper.selectByExample(example);
+			for (TCrmProject tCrmPro : tCrmPros) {
+				num = String.valueOf(tCrmPro.getPid());
+			}
+		} else {
+			tCrmProjectMapper.updateByPrimaryKey(tCrmProject);
+			num = String.valueOf(tCrmProject.getPid());
+		}
+		return num;
+	}
+
+	/**
+	 * 保存客户整体交流信息
+	 */
+	@Override
+	public String saveTCrmExtApplyInfo(TCrmExtApplyVo tCrmExtApply) {
+		String aid = null;
+		if (CommonUtil.replaceNullInt(tCrmExtApply.getAid()).intValue() == 0) {
+			tCrmExtApplyMapper.insert(tCrmExtApply);
+			Example example = new Example(TCrmExtApply.class);
+			Example.Criteria c = example.createCriteria();
+			c.andEqualTo("cname", tCrmExtApply.getCname());
+			c.andEqualTo("pname", tCrmExtApply.getPname());
+			List<TCrmExtApply> tCrmExtApps = tCrmExtApplyMapper.selectByExample(example);
+			for (TCrmExtApply TCrmExtApp : tCrmExtApps) {
+				aid = String.valueOf(TCrmExtApp.getAid());
+			}
+			
+			String listLinkmans = tCrmExtApply.getListLinkmans();
+			if (CommonUtil.isNotNull(listLinkmans))
+			{
+				List<String> linkmans = Arrays.asList(listLinkmans.split(","));
+				example = new Example(TCrmLinkman.class);
+				c = example.createCriteria();
+				c.andIn("lid", linkmans);
+				TCrmLinkman linkman = new TCrmLinkman();
+				linkman.setAid(CommonUtil.replaceNullInt(aid));
+				int num = tCrmLinkmanMapper.updateByExampleSelective(linkman, example);
+				// tCrmLinkmanMapper
+			}
+			
+		} else {
+			tCrmExtApplyMapper.updateByPrimaryKey(tCrmExtApply);
+			aid = String.valueOf(tCrmExtApply.getAid());
+		}
+		return aid;
+	}
+
+	@Override
+	public List<Object> getApplyDetail(int aid) {
+		List<Object> dataList = new ArrayList<>();
+		TCrmExtApply apply = tCrmExtApplyMapper.selectByPrimaryKey(aid);
+		dataList.add(apply);
+		apply.setRegion(SysCodeCache.getCodeText(SysCodeCache.CODE_REGION, apply.getRegion()));
+		apply.setProvince(SysCodeCache.getCodeText(SysCodeCache.CODE_REGION, apply.getProvince()));
+		apply.setSource(SysCodeCache.getCodeText(SysCodeCache.CODE_CUS_SOURCE, apply.getSource()));
+		apply.setUnitType(SysCodeCache.getCodeText(SysCodeCache.CODE_UNITTYPE, apply.getUnitType()));
+		apply.setStage(SysCodeCache.getCodeText(SysCodeCache.CODE_PHASE, apply.getStage()));
+		apply.setExtend1(SysCodeCache.getCodeText(SysCodeCache.CODE_PROJ_STATUS, apply.getStatus()));
+		apply.setCooperOther(SysCodeCache.getCodeText(SysCodeCache.CODE_BOOLEAN, apply.getCooperOther()));
+		apply.setWinRole(SysCodeCache.getCodeText(SysCodeCache.CODE_WINROLE, apply.getWinRole()));
+		String[] extOwners = CommonUtil.replaceNullStr(apply.getExtOwner()).split(",");
+		String extOwner ="";
+		for(int i=0 ; i < extOwners.length ; i++){
+			Example extExample = new Example(TSysEmployee.class);
+			Example.Criteria ext = extExample.createCriteria();
+			ext.andEqualTo("eno", extOwners[i]);
+			List<TSysEmployee> tSysEmployees = tSysEmployeeMapper.selectByExample(extExample);
+			for(TSysEmployee tSysEmployee : tSysEmployees) {
+				extOwner += tSysEmployee.getEname()+",";
+			}
+		}
+		if (extOwner.length() > 1)
+			extOwner=extOwner.substring(0, extOwner.length()-1);
+		apply.setExtend2(extOwner);
+		Example example = new Example(TCrmLinkman.class);
+		Example.Criteria c = example.createCriteria();
+		c.andEqualTo("aid", aid);
+		List<TCrmLinkman> linkmanList = tCrmLinkmanMapper.selectByExample(example);
+		for (int i = 0, len = CommonUtil.getLen(linkmanList); i < len; i++)
+		{
+			TCrmLinkman likman = linkmanList.get(i);
+			likman.setSex(SysCodeCache.getCodeText("00001", likman.getSex()));
+			likman.setDept(SysCodeCache.getCodeText("00010", likman.getDept()));
+			likman.setSuperDept(SysCodeCache.getCodeText("00009", likman.getSuperDept()));
+			likman.setPost(SysCodeCache.getCodeText("00011", likman.getPost()));
+		}
+		dataList.add(linkmanList);
+		return dataList;
+	}
+	
+	
+	/**
+	 * 审批用户交流申请
+	 * @param tCrmExtApply
+	 * @return
+	 */
+	public boolean approval(TCrmExtApply tCrmExtApply)
+	{
+		Example example = new Example(TCrmExtApply.class);
+		Example.Criteria c = example.createCriteria();
+		c.andEqualTo("aid", tCrmExtApply.getAid());
+		int num = 0;
+		try
+		{
+			num = tCrmExtApplyMapper.updateByExampleSelective(tCrmExtApply, example);
+		}
+		catch(Exception ex)
+		{
+			logger.error("审批时出错,参数={" + tCrmExtApply.toString() + "}", ex);
+		}
+		return num > 0;
+	}
+
+	public TCrmProject getProDetail(int pid)
+	{
+		TCrmProject project = tCrmProjectMapper.selectByPrimaryKey(pid);
+		if (null != project)
+		{
+			project.setStage(SysCodeCache.getCodeText(SysCodeCache.CODE_PHASE, project.getStage()));
+		}
+		return project;
+	}
+}

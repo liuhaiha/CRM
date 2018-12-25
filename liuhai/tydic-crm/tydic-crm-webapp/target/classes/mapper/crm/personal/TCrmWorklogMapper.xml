@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tydic.traffic.crm.dao.TCrmWorklogMapper">
+  <resultMap id="BaseResultMap" type="com.tydic.traffic.crm.entity.TCrmWorklog">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="logID" jdbcType="INTEGER" property="logid" />
+    <result column="logtype" jdbcType="VARCHAR" property="logtype" />
+    <result column="cid" jdbcType="INTEGER" property="cid" />
+    <result column="pid" jdbcType="INTEGER" property="pid" />
+    <result column="content" jdbcType="VARCHAR" property="content" />
+    <result column="creator" jdbcType="VARCHAR" property="creator" />
+    <result column="creator_no" jdbcType="VARCHAR" property="creatorNo" />
+    <result column="createtime" jdbcType="TIMESTAMP" property="createtime" />
+    <result column="byzd1" jdbcType="VARCHAR" property="byzd1" />
+    <result column="byzd2" jdbcType="VARCHAR" property="byzd2" />
+    <result column="byzd3" jdbcType="VARCHAR" property="byzd3" />
+    <result column="byzd4" jdbcType="VARCHAR" property="byzd4" />
+    <result column="byzd5" jdbcType="VARCHAR" property="byzd5" />
+    <result column="byzd6" jdbcType="VARCHAR" property="byzd6" />
+    <result column="byzd7" jdbcType="VARCHAR" property="byzd7" />
+    <result column="byzd8" jdbcType="VARCHAR" property="byzd8" />
+    <result column="byzd9" jdbcType="VARCHAR" property="byzd9" />
+    <result column="byzd10" jdbcType="VARCHAR" property="byzd10" />
+    <result column="modifier" jdbcType="VARCHAR" property="modifier" />
+    <result column="modifytime" jdbcType="TIMESTAMP" property="modifytime" />
+    <result column="is_join" jdbcType="VARCHAR" property="isJoin" />
+  </resultMap>
+  
+  <resultMap id="worklogVo" type="com.tydic.traffic.crm.vo.TCrmWorklogVo">
+    <id column="logID" jdbcType="INTEGER" property="logid" />
+    <result column="logtype" jdbcType="VARCHAR" property="logtype" />
+    <result column="cid" jdbcType="INTEGER" property="cid" />
+    <result column="pid" jdbcType="INTEGER" property="pid" />
+    <result column="custName" jdbcType="VARCHAR" property="custName" />
+    <result column="projName" jdbcType="VARCHAR" property="projName" />
+    <result column="content" jdbcType="VARCHAR" property="content" />
+    <result column="creator" jdbcType="VARCHAR" property="creator" />
+    <result column="creator_no" jdbcType="VARCHAR" property="creatorNo" />
+    <result column="createtime" jdbcType="TIMESTAMP" property="createtime" />
+  </resultMap>
+  
+   <select id="queryLog" resultMap="worklogVo" parameterType="com.tydic.traffic.crm.vo.TCrmWorklogVo">
+     	select w.logID,w.logtype,w.content,w.createtime,w.creator,w.cid,w.pid,cus.cname as custName,proj.short_name as projName
+		from t_crm_worklog w 
+		left join t_crm_customer cus on w.cid=cus.cid
+		left join t_crm_project proj on w.pid=proj.pid
+		where creator_no=#{creatorNo}
+		<if test="content !=null and content!=''">
+			and content like '%${content}%'
+		</if>
+		<if test="creator !=null and creator!=''">
+			and (w.creator like '%${creator}%' or w.creator_no=#{creator})
+		</if>
+		<if test="logtype !=null and logtype!=0">
+			and logtype=#{logtype}
+		</if>
+		
+		<if test="beginDate !=null and beginDate!=''">
+			<![CDATA[and w.createtime>=time_format(#{beginDate},'%Y-%m-%d')]]>
+		</if>
+		<if test="endDate !=null and endDate!=''">
+			<![CDATA[and w.createtime<DATE_ADD(STR_TO_DATE(#{endDate},'%Y-%m-%d'),INTERVAL 1 DAY)]]>
+		</if>
+		<if test="cid !=null and cid!=0">
+			and w.cid=#{cid}
+		</if>
+		<if test="pid !=null and pid!=0">
+			and w.pid=#{pid}
+		</if>
+		order by w.modifytime desc
+  </select>
+  
+  <select id="queryAllCustomer" resultType="java.util.Map">
+  		select cid,cname from t_crm_customer
+  </select>
+  <select id="queryProByCusId" resultType="java.util.Map">
+  		select pid,short_name from t_crm_project where cid=#{cid}
+  </select>
+  
+  <select id="queryAllEmployee" resultType="java.util.Map">
+  		select eno,ename from t_sys_employee
+  </select>
+ 
+</mapper>

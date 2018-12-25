@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tydic.traffic.crm.dao.TSaleFilesMapper">
+  <resultMap id="BaseResultMap" type="com.tydic.traffic.crm.entity.TSaleFiles">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="fid" jdbcType="INTEGER" property="fid" />
+    <result column="fname" jdbcType="VARCHAR" property="fname" />
+    <result column="ftype" jdbcType="VARCHAR" property="ftype" />
+    <result column="fsize" jdbcType="REAL" property="fsize" />
+    <result column="fpath" jdbcType="VARCHAR" property="fpath" />
+    <result column="fclass" jdbcType="VARCHAR" property="fclass" />
+    <result column="fstar" jdbcType="REAL" property="fstar" />
+    <result column="common" jdbcType="CHAR" property="common" />
+    <result column="creator" jdbcType="VARCHAR" property="creator" />
+    <result column="createtime" jdbcType="TIMESTAMP" property="createtime" />
+    <result column="modifier" jdbcType="VARCHAR" property="modifier" />
+    <result column="modifytime" jdbcType="TIMESTAMP" property="modifytime" />
+  </resultMap>
+  
+  <insert id="insertFile" parameterType="com.tydic.traffic.crm.entity.TSaleFiles" >
+  	insert into t_sale_files 
+  	values(null,#{fname},#{ftype},#{fsize},#{fpath},#{fclass},null,#{common},#{creator},sysdate(),#{creator},sysdate())
+  </insert>
+  <!--the next code-->
+  <select id="nextCode" parameterType="com.tydic.traffic.crm.entity.TSysCode" resultType="java.util.HashMap" >
+  	select max(c.code+0)+1 as code,max(f.fclass+0)+1 as fclass
+  	from t_sys_code c ,t_sale_files f
+  	where c.category=#{category}
+  </select>
+  <insert id="addMenu" parameterType="com.tydic.traffic.crm.entity.TSysCode" >
+  	insert into t_sys_code values(null,#{name},#{code},#{category},#{sequence},#{pid},#{type},#{creator},#{createtime},#{modifier},#{modifytime})
+  </insert>
+  
+  <delete id="deleteMenu" parameterType="java.lang.Integer" >
+  	delete from t_sys_code where cid=#{cid} or pid=#{cid}
+  </delete>
+  <select id="queryFile" parameterType="java.util.HashMap" resultType="com.tydic.traffic.crm.entity.TSaleFiles">
+  	select f.fid,f.fname,f.ftype,f.fsize,f.fpath,f.fclass,f.fstar,f.common,e1.ename as creator,f.createtime,e2.ename as modifier,f.modifytime
+	from t_sale_files f 
+	LEFT JOIN t_sys_employee e1 ON f.creator=e1.eno
+	LEFT JOIN t_sys_employee e2 ON f.modifier=e2.eno
+  	where f.fclass in
+  	<foreach collection="fclass" item="fclass" separator="," open="(" close=")">
+  		#{fclass}
+  	</foreach>
+  	<if test="fname !=null">
+  		and f.fname like concat('%',#{fname},'%')
+  	</if>
+  	<if test="creator !=null">
+  		and e2.ename like concat('%',#{creator},'%')
+  	</if>
+  	<if test="ftype !=null">
+  		and 
+  		<foreach collection="ftype" item="type" separator="or" open="(" close=")">
+  			 f.ftype like concat('%',#{type},'%')
+  		</foreach>
+  	</if>
+  	order by f.modifytime desc
+  </select>
+</mapper>

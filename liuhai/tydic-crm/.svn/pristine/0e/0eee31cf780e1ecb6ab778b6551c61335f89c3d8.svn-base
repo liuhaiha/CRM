@@ -1,0 +1,134 @@
+@charset "utf-8";
+/* CSS Document */
+body {
+		font-size: 12px;
+}
+table {
+	width: 100%;
+}
+td{
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.dv_tb {
+	border: 1px solid #99BBE8;
+}
+.dv_tb_hd {
+	height: 24px;
+}
+.dv_tb_hd_td {
+	background: url(images/new_01.jpg) repeat-x;
+	border-right: 1px solid #CCCCCC;
+}
+.dv_tb_jy {
+	height: 22px;
+	border-bottom: 1px solid #EDEDED;
+}
+.dv_tb_jy_td {
+	border-bottom: 1px solid #EDEDED;
+}
+.dv_exp {
+	background: url(images/detail_2.gif) no-repeat;
+	width: 17px;
+	height: 22px;
+	cursor: hand;
+}
+.dv_col {
+	background: url(images/detail_1.gif) no-repeat;
+	width: 17px;
+	height: 22px;
+	cursor: hand;
+}
+.dv_tb_bt {
+	height: 12px;
+}
+.dv_it {
+	border-bottom: solid 2px #99BBE8;
+	font-weight: bold;
+	color: #3764A0;
+	cursor: hand;
+}
+.dv_it_ni {
+	border-bottom: solid 2px #99BBE8;
+	font-weight: bold;
+	color: #999999;
+	cursor: hand;
+}
+.dv_it_bd {
+	padding: 10px 20px;
+}
+.dv_cur {
+	color: #FF9900;
+}
+.dv_pager span {
+	color: #FF9900;
+}
+.dv_first {
+	background: url(images/fy_dy.jpg) no-repeat;
+	width: 25px;
+	height: 16px;
+	cursor: hand;
+}
+.dv_prev {
+	background: url(images/fy_sy.jpg) no-repeat;
+	width: 25px;
+	height: 16px;
+	cursor: hand;
+}
+.dv_next {
+	background: url(images/fy_xy.jpg) no-repeat;
+	width: 25px;
+	height: 16px;
+	cursor: hand;
+}
+.dv_last {
+	background: url(images/fy_zh.jpg) no-repeat;
+	width: 25px;
+	height: 16px;
+	cursor: hand;
+}
+.dv_pager {
+	width: 400px;
+}
+.dv_pager div {
+	margin-top: 8px;
+}
+#dv_ctl {
+	text-align: center;
+	margin: 5px 0px;
+}
+.dv_xx {
+	background-color: #F9F9F9;
+	border: 1px dashed #CCC;
+}
+.dv_xx_hd {
+	text-align:right;
+	color: #666;
+}
+.dv_tb_xx img {
+	width: 115px;
+	height: 140px;
+	border: #ccc 1px solid;
+}
+.dv_pager table {
+	width: 100px;
+}
+.dv_xx_row {
+	display: none;
+}
+.dv_loading {
+	width: 20px;
+	height: 20px;
+	background: url(images/loading.gif) no-repeat;
+	float:left;
+}
+.dv_xx_div {
+	display: none;
+	clear: both;
+	border: 1px solid #ccc;
+	padding: 10px 0px;
+}
+.dv_data {
+	table-layout: fixed;
+}

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tydic.traffic.crm.dao.TCrmWorkdeskMapper">
+	
+	<!-- 查询未来一周到的联系人生日 -->
+	<select id="queryBirthdayWeekly" resultType="java.util.HashMap">
+		<![CDATA[
+			select DISTINCT l.*,c.`name` as sex_zh,c1.`name` as super_dept_zh,c2.`name` as dept_zh
+			from t_crm_linkman l LEFT JOIN t_sys_code c ON c.category='00001' and l.sex=c.`code`
+			left join t_sys_code c1 on c1.category='00009' and l.super_dept=c1.`code`
+			left join t_sys_code c2 on c2.category='00010' and l.dept=c2.`code`
+			where STR_TO_DATE(CONCAT('2012',DATE_FORMAT(birthday,'-%m-%d')),'%Y-%m-%d') - STR_TO_DATE(CONCAT('2012',DATE_FORMAT(CURDATE(),'-%m-%d')),'%Y-%m-%d') <=7
+				and STR_TO_DATE(CONCAT('2012',DATE_FORMAT(birthday,'-%m-%d')),'%Y-%m-%d') - STR_TO_DATE(CONCAT('2012',DATE_FORMAT(CURDATE(),'-%m-%d')),'%Y-%m-%d') >=0
+				OR (STR_TO_DATE(CONCAT('2013',DATE_FORMAT(birthday,'-%m-%d')),'%Y-%m-%d') - STR_TO_DATE(CONCAT('2012',DATE_FORMAT(CURDATE(),'-%m-%d')),'%Y-%m-%d') <=7
+				and STR_TO_DATE(CONCAT('2013',DATE_FORMAT(birthday,'-%m-%d')),'%Y-%m-%d') - STR_TO_DATE(CONCAT('2012',DATE_FORMAT(CURDATE(),'-%m-%d')),'%Y-%m-%d') >=0)
+			order by STR_TO_DATE(CONCAT('2012',DATE_FORMAT(birthday,'-%m-%d')),'%Y-%m-%d') - STR_TO_DATE(CONCAT('2012',DATE_FORMAT(CURDATE(),'-%m-%d')),'%Y-%m-%d') asc
+		]]>
+	</select>
+	
+  	<!-- 查询待办事情 -->
+  	<select id="queryBacklog" parameterType="java.util.HashMap" resultType="java.util.HashMap" >
+  		<![CDATA[select * from t_crm_ext_apply 
+  		where ext_owner like concat('%',#{eno},'%') and ext_time>=DATE_SUB(CURRENT_DATE(),INTERVAL DAYOFMONTH(CURRENT_DATE())-1 DAY)
+  			and ext_time<DATE_ADD(DATE_SUB(CURRENT_DATE(),INTERVAL DAYOFMONTH(CURRENT_DATE())-1 DAY),INTERVAL 1 MONTH)
+  		order by ext_time asc]]>
+  	</select>
+  	
+  	<!-- 查询当月的事情 -->
+  	<select id="queryBacklogInCurMonth" parameterType="java.util.HashMap" resultType="java.util.HashMap" >
+  		<![CDATA[select * from t_crm_ext_apply 
+  		where appr_status='1' and ext_owner like concat('%',#{eno},'%') and ext_time>=DATE_SUB(CURRENT_DATE(),INTERVAL DAYOFMONTH(CURRENT_DATE())-1 DAY)
+  			and ext_time<DATE_ADD(DATE_SUB(CURRENT_DATE(),INTERVAL DAYOFMONTH(CURRENT_DATE())-1 DAY),INTERVAL 1 MONTH)
+  		order by ext_time asc]]>
+  	</select>
+  	
+  	<!-- 查询未审批事件 -->
+  	<select id="queryUnapprove" parameterType="java.util.HashMap" resultType="java.util.HashMap" >
+		  <![CDATA[select * from t_crm_ext_apply 
+  		where  appr_no like concat('%',#{eno},'%') and appr_status is null and  ext_time>=DATE_SUB(CURRENT_DATE(),INTERVAL DAYOFMONTH(CURRENT_DATE())-1 DAY)
+  			and ext_time<DATE_ADD(DATE_SUB(CURRENT_DATE(),INTERVAL DAYOFMONTH(CURRENT_DATE())-1 DAY),INTERVAL 1 MONTH)
+  		order by ext_time asc]]>
+  	</select>
+  	
+  	<!-- 查询账号 -->
+  	<select id="queryEname" parameterType="java.util.HashMap" resultType="java.lang.String">
+  		select ename from t_sys_employee
+  		where eno in 
+  		<foreach open="(" separator="," close=")" item="item" collection="eno">
+  			#{item}
+  		</foreach>
+  	</select>
+  	<!-- 查询一个月未跟进项目 -->
+  	<select id="queryProjectBeyondMonth"  resultType="java.util.HashMap">
+  		<![CDATA[
+			select p.*,r.mtime,TO_DAYS(NOW())-TO_DAYS(r.mtime) as sub_mtime,TO_DAYS(NOW())-TO_DAYS(p.createtime) as ctime
+			from t_crm_project p
+			left join (select distinct * from t_crm_meeting_record r1 where r1.mtime=(select max(mtime) from t_crm_meeting_record r2 where r1.pid=r2.pid) group by r1.pid) r
+				on p.pid=r.pid
+			where TO_DAYS(NOW())-TO_DAYS(r.mtime)>30 or TO_DAYS(NOW())-TO_DAYS(p.createtime)>30
+			order  by TO_DAYS(NOW())-TO_DAYS(r.mtime) desc,TO_DAYS(NOW())-TO_DAYS(p.createtime) desc
+		]]>
+  	</select>
+</mapper>

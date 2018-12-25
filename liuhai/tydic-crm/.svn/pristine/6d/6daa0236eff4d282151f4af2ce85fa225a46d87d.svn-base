@@ -1,0 +1,1200 @@
+var layer;
+layui.config({
+		base: '../../plugins/layui/modules/'
+	});
+layui.use(['form', 'layer', 'laydate', 'laypage'], function() {
+	var form = layui.form(),
+		layer = layui.layer,
+		laypage = layui.laypage;
+});
+
+var treeId;
+var level = 0;
+var code = '';
+var pcode = '';
+var treeName = '';
+var proId = 0;
+
+// 从数据库中获取treeId、proId
+getTreeId();
+function getTreeId() {
+	$.ajax({
+		type    : 'GET',
+		url     : '../../base/getFirstTreeId',
+		dataType: 'json',
+		async   : false,
+		success : function(result) {
+			treeId = result;
+		}
+	});
+}
+
+// 显示数据字典树形列表
+refleshTree();
+function refleshTree() {
+	$("#org_tree").html("");
+	layui.use('tree', function() {
+		$.ajax({
+			type     : 'GET',
+			url      : '../../base/list',
+			dataType : 'json',
+			async    : true,
+			success  : function(result) {
+				layui.tree({
+				  	elem: '#org_tree' //传入元素选择器
+				  	,click: function(item) {
+				  		treeId = item.id;
+				  		level = item.level;
+				  		pcode = item.pcode;
+				  		code = item.alias;
+				  		treeName = item.name;
+				  		if(level == 1){
+				  			$("#midLevel").val(1);
+				  		}
+				  		if(level == 2){
+				  			$("#midLevel").val(2);
+				  		}
+				  		if (level == 3)
+				  		{
+				  			$("#midLevel").val(3);
+				  			showCust(treeId);
+				  			// 点击菜单选项-显示项目信息
+				  			showproject(treeId);
+				  			// 点击菜单选项-显示联系人信息
+				  			showLinkman(treeId, proId);
+				  			// 点击菜单选项-显示会议纪要列表数据
+				  			showMeetingList(treeId, proId);
+				  		}
+				  	},nodes: result
+				});
+			}
+		});
+	});
+}
+
+// 增加树节点
+function addTree()
+{
+	if (treeId == 0) {
+		alert('请选取一个节点');
+	} else if(level > 0) {
+		if (level == 1)
+		{
+			showAddProvDiv();
+		}
+		else if (level == 2)
+		{
+			showAddCustDiv(code,pcode);
+		}
+		else if(level == 3)
+		{
+			alert('该层节点无添加操作');
+		}
+	} else {
+		alert('请选取一个节点');
+	}
+}
+
+// 删除树节点
+function delTree()
+{
+	if (treeId == 0) {
+		alert('请选择一个节点');
+	}
+	if (treeId > 0 && level > 0) {
+		layer.confirm(treeName + ',确认删除?',{
+			title:'提示:可删除区域/省份地市/客户'
+			,btn:['确认', '取消']
+			,yes:function(index,layerno)
+			{
+				$.ajax({
+					type     : "GET",
+					url      : "../../base/delTree/" + treeId + "/" + level,
+					dataType : "json",
+					success  : function(result) {
+						if (result) {
+							refleshTree();
+							showCust(1);
+						} else {
+							alert("删除失败，请重试");
+						}
+					}, 
+					error    : function(err) {
+						alert(err);
+					}
+				});
+				
+				layer.close(index);
+			}
+		});
+	} else {
+		alert('请选择一个节点');
+	}
+}
+
+$(document).ready(function()
+{
+	changeTreeHeight();
+});
+
+function changeTreeHeight()
+{
+	var authHeight = $("#parentDiv").css("height").replace("px","");
+	var treeHeight = $("#tree_parentDiv").css("height").replace("px","");
+	
+	if (parseInt(treeHeight) < parseInt(authHeight))
+	{
+		//$("#tree_parentDiv").css("height",authHeight-13);
+		//$("#menu-scroll").css("height",authHeight);
+	}
+
+}
+
+getRegion();
+getSource();
+getUnit();
+getPhase();
+getSuperDept();
+getDept();
+getPost();
+getSex();
+getBusLeader();
+getPreLeader();
+getDelLeader();
+var check_val = [];
+
+// 新增省份节点
+function showAddProvDiv()
+{
+	layer.open({
+		  title: '备注：添加子节点'
+		  ,type: 1
+		  ,content: $('#addProvTree')
+		  ,shade:false
+		  ,shadeClose:false
+		  ,btn: ['新增', '取消']
+		  ,yes: function(index, layero){
+			//按钮【按钮一】的回调
+			var codeName = document.getElementById('code_name').value;
+			var code = document.getElementById('code_code').value;
+			$.ajax({
+				type     : "POST",
+				url      : "../../base/addTree",
+				dataType : "json",
+				data     : {"pid":treeId, "name":codeName,"code":code},
+				success  : function(data) {
+					refleshTree(); // 刷新节点
+					$("#code_name").val("");
+					$("#code_code").val("");
+				}, 
+				error    : function() {
+					alert('新增失败，请重试');
+				}
+			});
+			
+			layer.close(index); //如果设定了yes回调，需进行手工关闭
+		  }
+		  ,cancel: function(index, layero){ 
+			//右上角关闭回调
+			
+			//return false 开启该代码可禁止点击该按钮关闭
+			layer.close(index); //如果设定了yes回调，需进行手工关闭
+	  }});
+}
+
+// 新增客户节点
+function showAddCustDiv(code,pcode)
+{
+	var fields = ['name','addr','region','province','resource','unit_type'];
+	var filedNames = ['客户名称','单位地址','所属区域','所属省份','客户来源','单位类别'];
+	var result = true;
+	var len = fields.length;
+	$("#cust_region").val(pcode);
+	$("#cust_province").val(code);
+	
+	layer.open({
+		  title: '备注：添加子节点'
+		  ,type: 1
+		  ,content: $('#addCustTree')
+		  ,shade:false
+		  ,shadeClose:false
+		  ,btn: ['新增', '取消']
+		  ,yes: function(index, layero){
+			//按钮【按钮一】的回调
+		  
+			  for (var i = 0; i< len; i++)
+				{
+					if ($("#cust_" + fields[i]).val() == "")
+					{
+						alert(filedNames[i] + "不能为空");
+						return false;
+					}
+				}
+			  
+		  	var cname = document.getElementById('cust_name').value;
+			var addr = document.getElementById('cust_addr').value;
+			var region = document.getElementById('cust_region').value;
+			var province = document.getElementById('cust_province').value;
+			var resource = document.getElementById('cust_resource').value;
+			var unitType = document.getElementById('cust_unit_type').value;
+			
+			$.ajax({
+				type     : "POST",
+				url      : "../../base/customer/create",
+				dataType : "json",
+				data     : {"cname":cname, "addr":addr, "region":region, "province":province, "resource":resource, "unitType":unitType},
+				success  : function(data) {
+					refleshTree(); // 刷新节点
+					for (var i = 0; i< len; i++)
+					{
+						$("#cust_" + fields[i]).val("");
+					}
+				}, 
+				error    : function() {
+					alert('新增失败，请重试');
+				}
+			});
+			
+			layer.close(index); //如果设定了yes回调，需进行手工关闭
+		  }
+		  ,cancel: function(index, layero){ 
+			layer.close(index); //如果设定了yes回调，需进行手工关闭
+	  }});
+}
+
+var proPageNumber = parseInt($("#pageNumber").text() == ""?"1":$("#pageNumber").text());
+var proPageSize = $("#pageSize").val() == undefined?"4":$("#pageSize").val();
+var lPageNumber = parseInt($("#pageNumberLinkman").text() == ""?"1":$("#pageNumberLinkman").text());
+var lPageSize = $("#pageSizeLinkman").val() == undefined?"4":$("#pageSizeLinkman").val();
+var mPageNumber = parseInt($("#pageNumber").text() == ""?"1":$("#pageNumber").text());
+var meetingPageSize = $("#pageSize").val() == undefined?"4":$("#pageSize").val();
+
+showCust(treeId);
+showproject(treeId);
+showLinkman(treeId, proId);
+showMeetingList(treeId, proId);
+function showCust(id)
+{
+	//点击菜单选项重现客户信息
+	$.ajax({
+		type     : "GET",
+		url      : "../../base/findCustById/" + id,
+		dataType : "json",
+		async    : true,
+		success  : function(data) {
+			$('#cus_name').val(data.cname);
+			$('#cus_addr').val(data.addr);
+			$('#cus_region').val(data.region);
+			$('#cus_region').trigger("change");
+			$('#cus_province').val(data.province);
+			$('#cus_resource').val(data.resource);
+			$('#cus_unit_type').val(data.unitType);
+			var region = $('#cus_region option:selected').text();
+			var province = $('#cus_province option:selected').text();
+			$('#line_text').html("客户资料：" + region + "-" + province + "-" + data.cname);
+		}, 
+		error    : function() {
+			alert('客户信息查询失败，请重试');
+		}
+	});
+}
+
+//显示项目列表
+function showproject(id)
+{
+	$.ajax({
+		type     : 'GET',
+		url      : '../../base/queryProjectList',
+		dataType : 'json',
+		data     : {"pageNumber":proPageNumber, "pageSize":proPageSize, "id":id},
+		async    : true,
+		success  : function(result) {
+			proTotalPage = result.totalPage;
+			var dataArr = result.results;
+			if (dataArr != null) {
+				var leng = dataArr.length;
+			}
+			var datahtml = "";
+			if (leng > 0) {
+				for (i in dataArr) {
+					datahtml += "<tr style='font-size:11px;height:35px;'><td style='font-size:11px;'><input type='checkbox' name='project' value='" + dataArr[i].pid + "' onclick='checkProject(this)'>";
+					datahtml += "</td><td class='dv_tb_jy_td' align='center'>" + replaceNull(dataArr[i].shortName);
+					datahtml += "</td><td class='dv_tb_jy_td' align='center'>" + replaceNull(dataArr[i].stageName);
+					datahtml += "</td><td class='dv_tb_jy_td' align='center'>" + replaceNull(dataArr[i].decisioner);
+					datahtml += "</td><td class='dv_tb_jy_td' align='center'>" + replaceNull(dataArr[i].actBegintime);
+					datahtml += "</td><td class='dv_tb_jy_td' align='center'>" + replaceNull(dataArr[i].actEndtime) + "</td></tr>";
+				}
+				$("#projectList").html(datahtml);
+				$("#projectList").delegate("tr","mouseenter",function(){
+	    			$(this).css("background-color","#FDE5B2")
+	    			$(this).siblings().css("background-color","#fff")
+	    			});
+				//$("#projectList input:checkbox").eq(0).attr("checked","checked");
+			} else {
+				$("#projectList").html("<td  colspan='20' class='dv_tb_jy_td' align='center'> 没有数据！  </td>");
+			}
+			
+			loadpagePro(result.totalSize);
+			$("#totalSizePro").html(result.totalSize);
+		    $("#totalPagePro").html(result.totalPage);
+		},
+		error    : function() {
+			alert('项目信息查询失败，请重试');
+		}
+	});
+}
+
+//显示客户联系人表格数据
+function showLinkman(id, pid)
+{
+	if (pid > 0) {
+		proId = pid;
+		$.ajax({
+			type     : 'POST',
+			url      : '../../base/queryLinkmanListByPid',
+			dataType : 'json',
+			data     : {"pageNumber":lPageNumber, "pageSize":lPageSize, "pid":pid},
+			async    : true,
+			success  : function(result) {
+				lTotalPage = result.totalPage;
+				
+				var dataArr = result.results;
+				if (dataArr != null) {
+					var leng = dataArr.length;
+				}
+				var datahtml = "";
+				if (leng > 0) {
+					for (i in dataArr) {
+						datahtml += "<tr style='font-size:11px;height:35px;'><td style='font-size:11px;'><input type='checkbox' name='linkman' value='" + dataArr[i].lid + "' onclick='checkLinkman(this)'>";
+						datahtml += "</td><td class='dv_tb_jy_td' align='center'>" + replaceNull(dataArr[i].name);
+						datahtml += "</td><td class='dv_tb_jy_td' align='center'>" + replaceNull(dataArr[i].deptName);
+						datahtml += "</td><td class='dv_tb_jy_td' align='center'>" + replaceNull(dataArr[i].superDeptName);
+						datahtml += "</td><td class='dv_tb_jy_td' align='center'>" + replaceNull(dataArr[i].postName);
+						datahtml += "</td><td class='dv_tb_jy_td' align='center'>" + replaceNull(dataArr[i].sexName);
+						datahtml += "</td><td class='dv_tb_jy_td' align='center'>" + replaceNull(dataArr[i].telephone);
+						datahtml += "</td><td class='dv_tb_jy_td' align='center'>" + replaceNull(dataArr[i].email) + "</td></tr>";
+					}
+					$("#linkmanList").html(datahtml);
+					$("#linkmanList").delegate("tr","mouseenter",function(){
+		    			$(this).css("background-color","#FDE5B2")
+		    			$(this).siblings().css("background-color","#fff")
+		    			});
+				} else {
+					$("#linkmanList").html("<td  colspan='20' class='dv_tb_jy_td' align='center'> 没有数据！  </td>");
+				}
+				
+				loadpageLinkman(result.totalSize);
+				$("#totalSizeLinkman").html(result.totalSize);
+			    $("#totalPageLinkman").html(result.totalPage);
+				
+			},
+			error    : function() {
+				alert('客户联系人查询失败，请重试');
+			}
+		});
+	} else {
+		$.ajax({
+			type     : 'POST',
+			url      : '../../base/queryLinkmanList',
+			dataType : 'json',
+			data     : {"pageNumber":lPageNumber, "pageSize":lPageSize, "id":id},
+			async    : true,
+			success  : function(result) {
+				lTotalPage = result.totalPage;
+				var dataArr = result.results;
+				if (dataArr != null) {
+					var leng = dataArr.length;
+				}
+				var datahtml = "";
+				if (leng > 0) {
+					for (i in dataArr) {
+						datahtml += "<tr style='font-size:11px;height:35px;'><td style='font-size:11px;'><input type='checkbox' name='linkman' value='" + dataArr[i].lid + "' onclick='checkLinkman(this)'>";
+						datahtml += "</td><td class='dv_tb_jy_td' align='center'>" + replaceNull(dataArr[i].name);
+						datahtml += "</td><td class='dv_tb_jy_td' align='center'>" + replaceNull(dataArr[i].deptName);
+						datahtml += "</td><td class='dv_tb_jy_td' align='center'>" + replaceNull(dataArr[i].superDeptName);
+						datahtml += "</td><td class='dv_tb_jy_td' align='center'>" + replaceNull(dataArr[i].postName);
+						datahtml += "</td><td class='dv_tb_jy_td' align='center'>" + replaceNull(dataArr[i].sexName);
+						datahtml += "</td><td class='dv_tb_jy_td' align='center'>" + replaceNull(dataArr[i].telephone);
+						datahtml += "</td><td class='dv_tb_jy_td' align='center'>" + replaceNull(dataArr[i].email) + "</td></tr>";
+					}
+					$("#linkmanList").html(datahtml);
+					$("#linkmanList").delegate("tr","mouseenter",function(){
+		    			$(this).css("background-color","#FDE5B2")
+		    			$(this).siblings().css("background-color","#fff")
+		    			});
+				} else {
+					$("#linkmanList").html("<td  colspan='20' class='dv_tb_jy_td' align='center'> 没有数据！  </td>");
+				}
+				
+				
+				loadpageLinkman(result.totalSize);
+				$("#totalSizeLinkman").html(result.totalSize);
+			    $("#totalPageLinkman").html(result.totalPage);
+			},
+			error    : function() {
+				alert('客户联系人查询失败，请重试');
+			}
+		});
+	}
+}
+
+//显示会议纪要数据
+function showMeetingList(id, pid)
+{
+	if (pid > 0) {
+		proId = pid;
+		$.ajax({
+			type     : 'POST',
+			url      : '../../base/queryMeetingListByPid',
+			dataType : 'json',
+			data     : {"pageNumber":mPageNumber, "pageSize":mPageSize, "cid":id, "pid":pid},
+			async    : true,
+			success  : function(result) {
+				mTotalPage = result.totalPage;
+				var dataArr = result.results;
+				if (dataArr != null) {
+					var leng = dataArr.length;
+				}
+				var datahtml = "";
+				if (leng > 0) {
+					for (i in dataArr) {
+						datahtml += "<tr style='font-size:px;height:35px;'><td style='font-size:11px;'><input type='checkbox' name='meeting' value='" + dataArr[i].lid + "' onclick='checkLinkman(this)'>";
+						datahtml += "</td><td name='meeting1' class='dv_tb_jy_td' align='center'>" + replaceNull(dataArr[i].theme);
+						datahtml += "</td><td name='meeting1' class='dv_tb_jy_td' align='center'>" + replaceNull(dataArr[i].maddr);
+						datahtml += "</td><td class='dv_tb_jy_td' align='center'>" + replaceNull(dataArr[i].peer);
+						datahtml += "</td><td class='dv_tb_jy_td' align='center'>" + replaceNull(dataArr[i].customers);
+						datahtml += "</td><td class='dv_tb_jy_td' align='center'>" + replaceNull(dataArr[i].thirdman);
+						datahtml += "</td><td class='dv_tb_jy_td' align='center'>" + replaceNull(dataArr[i].recordname);
+						datahtml += "</td><td class='dv_tb_jy_td' align='center'>" + replaceNull(dataArr[i].mtime) + "</td></tr>";
+					}
+					$("#meetingList").html(datahtml);
+					$("#meetingList").delegate("tr","mouseenter",function(){
+		    			$(this).css("background-color","#FDE5B2")
+		    			$(this).siblings().css("background-color","#fff")
+		    			});
+					$("td[name='meeting1']").bind("click",function(obj){
+						alert('aaa');
+					});
+				} else {
+					$("#meetingList").html("<td  colspan='20' class='dv_tb_jy_td' align='center'> 没有数据！  </td>");
+				}
+				
+				loadpageMeeting(result.totalSize);
+				$("#totalSizeMeeting").html(result.totalSize);
+			    $("#totalPageMeeting").html(result.totalPage);
+			},
+			error    : function() {
+				alert('会议纪要列表数据查询失败，请重试');
+			}
+		});
+	} else {
+		$.ajax({
+			type     : 'POST',
+			url      : '../../base/queryMeetingListById',
+			dataType : 'json',
+			data     : {"pageNumber":mPageNumber, "pageSize":meetingPageSize, "id":id},
+			async    : true,
+			success  : function(result) {
+				mTotalPage = result.totalPage;
+				var dataArr = result.results;
+				if (dataArr != null) {
+					var leng = dataArr.length;
+				}
+				var datahtml = "";
+				if (leng > 0) {
+					for (i in dataArr) {
+						datahtml += "<tr id=" + dataArr[i].fileno + " style='font-size:11px;height:35px;'><td style='font-size:11px;'><input type='checkbox' name='meeting' value='" + dataArr[i].id + "' onclick='checkMeeting(this)'>";
+						datahtml += "</td><td name='meeting1' class='dv_tb_jy_td' align='center'>" + replaceNull(dataArr[i].theme);
+						datahtml += "</td><td name='meeting1' class='dv_tb_jy_td' align='center'>" + replaceNull(dataArr[i].maddr);
+						datahtml += "</td><td name='meeting1' class='dv_tb_jy_td' align='center'>" + replaceNull(dataArr[i].peer);
+						datahtml += "</td><td name='meeting1' class='dv_tb_jy_td' align='center'>" + replaceNull(dataArr[i].customers);
+						datahtml += "</td><td name='meeting1' class='dv_tb_jy_td' align='center'>" + replaceNull(dataArr[i].thirdman);
+						datahtml += "</td><td name='meeting1' class='dv_tb_jy_td' align='center'>" + replaceNull(dataArr[i].recordname);
+						datahtml += "</td><td name='meeting1' class='dv_tb_jy_td' align='center'>" + replaceNull(dataArr[i].mtime) + "</td></tr>";
+					}
+					$("#meetingList").html(datahtml);
+					$("#meetingList").delegate("tr","mouseenter",function(){
+		    			$(this).css("background-color","#FDE5B2");
+		    			$(this).siblings().css("background-color","#fff");
+		    		});
+					$("td[name='meeting1']").bind("click",function(obj){
+						
+						var proId = $(this).parent().attr('id');
+						//console.log(obj.currentTarget.previousElementSibling.parentNode.firstElementChild.innerHTML);
+						$('#meetingContent object').attr('data','/crm/saleFile/preview/' + proId);
+						layer.open({
+							title : '会议纪要内容：',
+							type  : 1,
+							content: $('#meetingContent'),
+							area:['1000px','800px'],
+							offset:10,
+							shade: false,
+							shadeClose: false,
+							btn: ['关闭'],
+							yes   : function(index, layero) {
+								layer.close(index);
+							}
+						});
+					});
+				} else {
+					$("#meetingList").html("<td  colspan='20' class='dv_tb_jy_td' align='center'> 没有数据！  </td>");
+				}
+				
+				loadpageMeeting(result.totalSize);
+				$("#totalSizeMeeting").html(result.totalSize);
+			    $("#totalPageMeeting").html(result.totalPage);
+			},
+			error    : function() {
+				alert('会议纪要列表数据查询失败，请重试');
+			}
+		});
+	}
+}
+
+//跳转到首页和末页-----项目列表
+function topagepro(topge) {
+	if( $("#totalPagePro").text()==0 ){
+		return;
+	}
+	if (topge == "tofirst") {
+		$("#pageNumberPro").html(1);
+		proPageNumber = 1;
+	} else if (topge == "tolast") {
+		$("#pageNumberPro").html(parseInt($("#totalPagePro").text()));
+		proPageNumber = proTotalPage;
+	}
+	
+	showproject(treeId);
+}
+//跳转到首页和末页-----客户联系人
+function topage(topge) {
+	if( $("#totalPageLinkman").text()==0 ){
+		return;
+	}
+	if (topge == "tofirst") {
+		$("#pageNumberLinkman").html(1);
+		lPageNumber = 1;
+	} else if (topge == "tolast") {
+		$("#pageNumberLinkman").html(parseInt($("#totalPageLinkman").text()));
+		lPageNumber = lTotalPage;
+	}
+	
+	showLinkman(treeId, proId);
+}
+//跳转到首页和末页-----会议纪要
+function topageMeeting(topge) {
+	if( $("#totalPageMeeting").text()==0 ){
+		return;
+	}
+	if (topge == "tofirst") {
+		$("#pageNumberMeeting").html(1);
+		mPageNumber = 1;
+	} else if (topge == "tolast") {
+		$("#pageNumberMeeting").html(parseInt($("#totalPageMeeting").text()));
+		mPageNumber = mTotalPage;
+	}
+	
+	showMeetingList(treeId, proId);
+}
+
+//上页 下页点击事件-----项目列表
+function changePagepro(obj) {
+	if( $("#totalPage").text()==0 ){
+		return;
+	}
+	var pageNumberPro = parseInt($("#pageNumberPro").text());
+	var totalPagePro = parseInt($("#totalPagePro").text());
+	if (obj == "next") {
+		if (pageNumberPro < totalPagePro) {
+			pageNumberPro = parseInt(pageNumberPro) + 1;
+		} else if (pageNumberPro < totalPagePro) {
+			pageNumberPro = 1;
+		}
+	} else if (obj == "last") {
+		if (pageNumberPro <= totalPagePro && pageNumberPro > 1) {
+			pageNumberPro = (pageNumberPro - 1);
+		}
+	}
+	$("#pageNumberPro").text(pageNumberPro);
+	proPageNumber = pageNumberPro;
+	showproject(treeId);
+}
+
+//上页 下页点击事件-----客户联系人
+function changePage(obj) {
+	if( $("#totalPageLinkman").text()==0 ){
+		return;
+	}
+	var pageNumber = parseInt($("#pageNumberLinkman").text());
+	var totalPage = parseInt($("#totalPageLinkman").text());
+	if (obj == "next") {
+		if (pageNumber < totalPage) {
+			pageNumber = parseInt(pageNumber) + 1;
+		} else if (pageNumber < totalPage) {
+			pageNumber = 1;
+		}
+	} else if (obj == "last") {
+		if (pageNumber <= totalPage && pageNumber > 1) {
+			pageNumber = (pageNumber - 1);
+		}
+	}
+	$("#pageNumberLinkman").text(pageNumber);
+	
+	lPageNumber = pageNumber;
+	showLinkman(treeId, proId);
+}
+
+//上页 下页点击事件-----会议纪要
+function changePageMeeting(obj) {
+	if( $("#totalPageMeeting").text()==0 ){
+		return;
+	}
+	var pageNumberMeeting = parseInt($("#pageNumberMeeting").text());
+	var totalPageMeeting = parseInt($("#totalPageMeeting").text());
+	if (obj == "next") {
+		if (pageNumberMeeting < totalPageMeeting) {
+			pageNumberMeeting = parseInt(pageNumberMeeting) + 1;
+		} else if (pageNumberMeeting < totalPageMeeting) {
+			pageNumberMeeting = 1;
+		}
+	} else if (obj == "last") {
+		if (pageNumberMeeting <= totalPageMeeting && pageNumberMeeting > 1) {
+			pageNumberMeeting = (pageNumberMeeting - 1);
+		}
+	}
+	$("#pageNumberMeeting").text(pageNumberMeeting);
+	
+	mPageNumber = pageNumberMeeting;
+	showMeetingList(treeId, proId);
+}
+
+//跳转到某一页---项目列表
+function tpagePro() {
+	var tpnum = $("#jpageNumberPro option:selected").text();
+	$("#pageNumberPro").text(tpnum);
+	
+	proPageNumber = tpnum;
+	showproject(treeId);
+}
+//跳转到某一页---客户联系人
+function tpageLinkman() {
+	var tpnum = $("#jpageNumberLinkman option:selected").text();
+	$("#pageNumberLinkman").text(tpnum);
+	
+	lPageNumber = tpnum;
+	showLinkman(treeId, proId);
+}
+//跳转到某一页---会议纪要
+function tpageMeeting() {
+	var tpnum = $("#jpageNumberMeeting option:selected").text();
+	$("#pageNumberMeeting").text(tpnum);
+	
+	mPageNumber = tpnum;
+	showMeetingList(treeId, proId);
+}
+
+//每页显示数---项目列表
+function jpagePro() {
+	proPageSize = $("#pageSizePro").val();
+	showproject(treeId);
+}
+//每页显示数---客户联系人
+function jpageLinkman() {
+	lPageSize = $("#pageSizeLinkman").val();
+	showLinkman(treeId, proId);
+}
+//每页显示数---会议纪要
+function jpageMeeting() {
+	meetingPageSize = $("#pageSizeMeeting").val();
+	showMeetingList(treeId, proId);
+}
+
+$(function() {
+	$("#first_page").click(function(){
+			proPageNumber = 1;
+			showproject(treeId);
+			layer.msg("当前为第一页");
+		}
+	);
+
+	$("#pre_page").click(function(){
+			proPageNumber-=1;
+			if (proPageNumber < 1) {
+				proPageNumber=1;
+				layer.msg("当前为第一页");
+			}
+			showproject(treeId);
+		}
+	);
+
+	$("#next_page").click(function(){
+			proPageNumber+=1;
+			if (proPageNumber > proTotalPage) {
+				proPageNumber=proTotalPage;
+				layer.msg("当前为最后一页");
+			}
+			showproject(treeId);
+		}
+	);
+	
+	$("#last_page").click(function(){
+			proPageNumber=proTotalPage;
+			showproject(treeId);
+			layer.msg("当前为最后一页");
+		}
+	);
+	
+	$("#linkman_first_page").click(function(){
+			lPageNumber = 1;
+			layer.msg("当前为第一页");
+			if (check_val.length > 0) {
+				showLinkman(treeId, proId);
+			} else {
+				showLinkman(treeId, 0);
+			}
+		}
+	);
+
+	$("#linkman_pre_page").click(function(){
+			lPageNumber-=1;
+			if (lPageNumber < 1) {
+				lPageNumber=1;
+				layer.msg("当前为第一页");
+			}
+			if (check_val.length > 0) {
+				showLinkman(treeId, proId);
+			} else {
+				showLinkman(treeId, 0);
+			}
+		}
+	);
+
+	$("#linkman_next_page").click(function(){
+			lPageNumber+=1;
+			if (lPageNumber > lTotalPage) {
+				lPageNumber=lTotalPage;
+				layer.msg("当前为最后一页");
+			}
+			if (check_val.length > 0) {
+				showLinkman(treeId, proId);
+			} else {
+				showLinkman(treeId, 0);
+			}
+		}
+	);
+	
+	$("#linkman_last_page").click(function(){
+			lPageNumber=lTotalPage;
+			layer.msg("当前为最后一页");
+			if (check_val.length > 0) {
+				showLinkman(treeId, proId);
+			} else {
+				showLinkman(treeId, 0);
+			}
+		}
+	);
+	
+	$("#m_first_page").click(function(){
+		mPageNumber = 1;
+		layer.msg("当前为第一页");
+		if (check_val.length > 0) {
+			showLinkman(treeId, proId);
+		} else {
+			showLinkman(treeId, 0);
+		}
+	}
+	);
+	
+	$("#m_pre_page").click(function(){
+		mPageNumber -= 1;
+		if (mPageNumber < 1) {
+			mPageNumber=1;
+			layer.msg("当前为第一页");
+		}
+		if (check_val.length > 0) {
+			showLinkman(treeId, proId);
+		} else {
+			showLinkman(treeId, 0);
+		}
+	}
+	);
+	
+	$("#m_next_page").click(function(){
+		mPageNumber += 1;
+		if (mPageNumber > mTotalPage) {
+			mPageNumber = mTotalPage;
+			layer.msg("当前为最后一页");
+		}
+		if (check_val.length > 0) {
+			showLinkman(treeId, proId);
+		} else {
+			showLinkman(treeId, 0);
+		}
+	}
+	);
+	
+	$("#m_last_page").click(function(){
+		mPageNumber = mTotalPage;
+		layer.msg("当前为最后一页");
+		if (check_val.length > 0) {
+			showLinkman(treeId, proId);
+		} else {
+			showLinkman(treeId, 0);
+		}
+	}
+	);
+});
+
+// 模糊搜索-项目经办人
+function searchDec() {
+	var decText = document.getElementById('pro_decisioner').value;
+	if ($.trim(decText) == "") {
+		$("#pro_dec").css("display", "none");
+		return;
+	}
+	$.ajax({
+		type     : "POST",
+		url      : "../../base/queryLinkmanListByName",
+		dataType : "json",
+		data     : {"name":decText},
+		success  : function(result) {
+			//console.log(result);
+			if (result.length > 0) {
+				$("#pro_dec").css("display", "");
+				var dataArr = result;
+				//console.log(dataArr);
+				var datahtml = "";
+				for (var i = 0; i < result.length; i++) {
+					datahtml += "<div onclick='divItemClick(this)' class='bg'>" + dataArr[i].name + "</div>";
+				}
+				$("#pro_dec").html("<div style='height:60px;overflow:auto;border: 1px solid grey'>" + datahtml + "</div>");
+			} else {
+				$("#pro_dec").css("display", "none");
+				//$("#pro_dec").css("display", "");
+				//$("#pro_dec").html("<div style='height:60px;overflow:auto;border: 1px solid grey'><font color='red'>无搜索结果，请重试</font></div>");
+			}
+		},
+		error    : function(error) {
+			alert('无搜索结果，请直接输入名称');
+		}
+	});
+}
+function divItemClick(obj) {
+	$("#pro_decisioner").val($(obj).text());
+	$("#pro_dec").css("display", "none");
+}
+
+function searchOpe() {
+	var opeText = document.getElementById('pro_operator').value;
+	if ($.trim(opeText) == "") {
+		$("#ope_dec").css("display", "none");
+		return;
+	}
+	$.ajax({
+		type     : "POST",
+		url      : "../../base/queryLinkmanListByName",
+		dataType : "json",
+		data     : {"name":opeText},
+		success  : function(result) {
+			if (result.length > 0) {
+				$("#ope_dec").css("display", "");
+				var dataArr = result;
+				//console.log(dataArr);
+				var datahtml = "";
+				for (var i = 0; i < result.length; i++) {
+					datahtml += "<div onclick='opeDivItemClick(this)' class='bg'>" + dataArr[i].name + "</div>";
+				}
+				$("#ope_dec").html("<div style='height:60px;overflow:auto;border: 1px solid grey'>" + datahtml + "</div>");
+			} else {
+				$("#ope_dec").css("display", "none");
+				//$("#ope_dec").css("display", "");
+				//$("#ope_dec").html("<div style='height:60px;overflow:auto;border: 1px solid grey'><font color='red'>无搜索结果，请重试</font></div>");
+			}
+		},
+		error    : function(error) {
+			alert('无搜索结果，请直接输入名称');
+		}
+	});
+}
+
+function opeDivItemClick(obj) {
+	$("#pro_operator").val($(obj).text());
+	$("#ope_dec").css("display", "none");
+}
+
+function replaceNull(value)
+{
+	if (value == undefined)
+	{
+		return "";
+	}
+	return value;
+}
+
+// 获取所属区域下拉选择框数据
+function getRegion() {
+	$.ajax({
+		type:"GET",
+		async: true,
+		dataType: "json",
+		url: "../../base/getRegion",
+		success: function(result) {
+			var html = "<option value=''>-请选择-</option>";
+			if (result != null) {
+				$.each(result, function(i, unit) {
+					html += "<option value='" + unit.code +"'>" + unit.name +"</option>";
+				});
+			}
+			$(".region").html(html);
+		}
+	});
+}
+
+// 获取所属区域下拉选择框数据
+function getProvince(obj) {
+	$.ajax({
+		type:"GET",
+		async: true,
+		dataType: "json",
+		url: "../../base/getProvince/" + obj.value,
+		success: function(result) {
+			var html = "<option value=''>-请选择-</option>";
+			if (result != null) {
+				$.each(result, function(i, unit) {
+					html += "<option value='" + unit.code +"'>" + unit.name +"</option>";
+				});						
+			}
+			$(".province").html(html);
+		}
+	});
+}
+
+//获取客户来源下拉选择框数据
+function getSource() {
+	$.ajax({
+		type:"GET",
+		async: true,
+		dataType: "json",
+		url: "../../base/getSource",
+		success: function(result) {
+			var html = "<option value=''>-请选择-</option>";
+			if (result != null) {
+				$.each(result, function(i, unit) {
+					html += "<option value='" + unit.code +"'>" + unit.name +"</option>";
+				});						
+			}
+			$(".source").html(html);
+		}
+	});
+}
+
+//获取单位类型下拉选择框数据
+function getUnit() {
+	$.ajax({
+		type:"GET",
+		async: true,
+		dataType: "json",
+		url: "../../base/getUnitType",
+		success: function(result) {
+			var html = "<option value=''>-请选择-</option>";
+			if (result != null) {
+				$.each(result, function(i, unit) {
+					html += "<option value='" + unit.code +"'>" + unit.name +"</option>";
+				});						
+			}
+			$(".unit").html(html);
+		}
+	});
+}
+
+//获取项目阶段下拉选择框数据
+function getPhase() {
+	$.ajax({
+		type:"GET",
+		async: true,
+		dataType: "json",
+		url: "../../base/getProjectPhase",
+		success: function(result) {
+			var html = "<option value=''>-请选择-</option>";
+			if (result != null) {
+				$.each(result, function(i, unit) {
+					html += "<option value='" + unit.code +"'>" + unit.name +"</option>";
+				});						
+			}
+			$(".phase").html(html);
+		}
+	});
+}
+
+//获取所在部门下拉选择框数据
+function getDept() {
+	$.ajax({
+		type:"GET",
+		async: true,
+		dataType: "json",
+		url: "../../base/getDept",
+		success: function(result) {
+			var html = "<option value=''>-请选择-</option>";
+			if (result != null) {
+				$.each(result, function(i, unit) {
+					html += "<option value='" + unit.code +"'>" + unit.name +"</option>";
+				});						
+			}
+			$(".dept").html(html);
+		}
+	});
+}
+
+//获取上级部门下拉选择框数据
+function getSuperDept() {
+	$.ajax({
+		type:"GET",
+		async: true,
+		dataType: "json",
+		url: "../../base/getSuperDept",
+		success: function(result) {
+			var html = "<option value=''>-请选择-</option>";
+			if (result != null) {
+				$.each(result, function(i, unit) {
+					html += "<option value='" + unit.code +"'>" + unit.name +"</option>";
+				});						
+			}
+			$(".super_dept").html(html);
+		}
+	});
+}
+
+//获取职务下拉选择框数据
+function getPost() {
+	$.ajax({
+		type:"GET",
+		async: true,
+		dataType: "json",
+		url: "../../base/getPost",
+		success: function(result) {
+			var html = "<option value=''>-请选择-</option>";
+			if (result != null) {
+				$.each(result, function(i, unit) {
+					html += "<option value='" + unit.code +"'>" + unit.name +"</option>";
+				});						
+			}
+			$(".post").html(html);
+		}
+	});
+}
+
+//获取性别下拉选择框数据
+function getSex() {
+	$.ajax({
+		type:"GET",
+		async: true,
+		dataType: "json",
+		url: "../../base/getSex",
+		success: function(result) {
+			var html = "<option value=''>-请选择-</option>";
+			if (result != null) {
+				$.each(result, function(i, unit) {
+					html += "<option value='" + unit.code +"'>" + unit.name +"</option>";
+				});
+			}
+			$(".sex").html(html);
+		}
+	});
+}
+
+//获取商务负责人下拉框数据
+function getBusLeader() {
+	$.ajax({
+		type:"GET",
+		async: true,
+		dataType: "json",
+		url: "../../base/getBusLeader",
+		success: function(result) {
+			var html = "<option value=''>-请选择-</option>";
+			if (result != null) {
+				$.each(result, function(i, unit) {
+					html += "<option value='" + unit.eno +"'>" + unit.ename +"</option>";
+				});						
+			}
+			$(".business_leader").html(html);
+		}
+	});
+}
+
+//获取售前负责人下拉框数据
+function getPreLeader() {
+	$.ajax({
+		type:"GET",
+		async: true,
+		dataType: "json",
+		url: "../../base/getPreLeader",
+		success: function(result) {
+			var html = "<option value=''>-请选择-</option>";
+			if (result != null) {
+				$.each(result, function(i, unit) {
+					html += "<option value='" + unit.eno +"'>" + unit.ename +"</option>";
+				});						
+			}
+			$(".presale_leader").html(html);
+		}
+	});
+}
+
+//获取项目负责人下拉框数据
+function getDelLeader() {
+	$.ajax({
+		type:"GET",
+		async: true,
+		dataType: "json",
+		url: "../../base/getDelLeader",
+		success: function(result) {
+			var html = "<option value=''>-请选择-</option>";
+			if (result != null) {
+				$.each(result, function(i, unit) {
+					html += "<option value='" + unit.eno +"'>" + unit.ename +"</option>";
+				});						
+			}
+			$(".deliver_leader").html(html);
+		}
+	});
+}
+
+var proLen = 0;
+var id = 0;
+function checkProject(val) {
+	if (val.checked) {
+		$("#linkmanList").html("");
+		check_val.push(val.value);
+		proLen = check_val.length;
+		if (proLen > 1) {
+			//alert('只能选1个复选框');
+			//val.checked = false;
+			id = check_val[0];
+			$("input[name=project][value='" + check_val[0] + "']").prop("checked", false);
+			var index = check_val.indexOf(id);
+			check_val.splice(index, 1);
+			proLen--;
+		}
+		showLinkman(treeId, val.value);
+		showMeetingList(treeId, val.value);
+	} else {
+		showLinkman(treeId, 0);
+		showMeetingList(treeId, 0);
+		var index = check_val.indexOf(val.value);
+		check_val.splice(index, 1);
+		proLen--;
+	}
+	return check_val;
+	
+//	if(val.checked){
+//	$("#linkmanList").html("");
+//	showLinkman(val.value);
+//	console.log($('#projectList input:checkbox[name="fid"]:checked').eq(0));
+//	$('#projectList :input:checkbox:checked').each(function(){
+//		if(this==val){
+//			return;
+//		}
+//		$(this).removeAttr("checked")
+//	});
+//}
+}

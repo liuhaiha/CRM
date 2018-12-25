@@ -1,0 +1,74 @@
+$(function(){
+	var personal = {
+		showInfo:function()
+		{
+			$.ajax({
+			      async: true,
+				  type: 'POST',
+				  url: 'getEmpInfo?t=' + Math.random(),
+				  dataType: 'json',
+				  timeout: 60000,
+				  success:function(result){
+					  if (result.code == "1")
+					  {
+						  var user = result.data;
+						  $("#eno").val(user.eno);
+						  $("#eid").val(user.eid);
+						  
+						  $("input[name='sex']").each(function(i,elemt){
+							  if ($(this).val() == user.sex)
+							  {
+								  $(this).attr("checked",true);
+							  }
+							  else
+							 {
+								  $(this).attr("checked",false);
+							 }
+							})
+						  
+						  $("#name").val(user.ename);
+						  $("#dno").val(user.dno);
+						  $("#hiredate").val(user.hiredate);
+						  $("#hiredate").val(user.hiredate);
+						  $("#station").val(user.station);
+						  $("#linkphone").val(user.linkphone);
+						  $("#telephone").val(user.telephone);
+						  $("#eMail").val(user.eMail);
+						  
+					  }
+					  
+				  },error:function(XMLHttpRequest, textStatus, errorThrown) {
+				   	  alert('系统错误,请联系系统管理员');
+				   	  return false;
+				  }
+			    }); 
+		}
+	}
+	personal.showInfo();
+});
+
+
+layui.use(['form', 'layedit', 'laydate'], function() {
+	var form = layui.form(),
+		layer = layui.layer,
+		layedit = layui.layedit,
+		laydate = layui.laydate;
+
+//	// 创建一个编辑器
+//	var editIndex = layedit.build('LAY_demo_editor');
+//	// 自定义验证规则
+//	form.verify({
+//		pass: [/(.+){6,12}$/, '密码必须6到12位'],
+//		content: function(value) {
+//			layedit.sync(editIndex);
+//		}
+//	});
+
+	// 监听提交
+	form.on('submit(save)', function(data) {
+		 layer.msg(JSON.stringify(data.field));
+		return false;
+	});
+});
+
+// http://www.layui.com/demo/form.html

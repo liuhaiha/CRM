@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tydic.traffic.crm.dao.TSysUserMapper">
+  <resultMap id="BaseResultMap" type="com.tydic.traffic.crm.entity.TSysUser">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="uid" jdbcType="INTEGER" property="uid" />
+    <result column="eid" jdbcType="INTEGER" property="eid" />
+    <result column="uname" jdbcType="VARCHAR" property="uname" />
+    <result column="upass" jdbcType="VARCHAR" property="upass" />
+    <result column="ustatus" jdbcType="INTEGER" property="ustatus" />
+    <result column="lock_time" jdbcType="TIMESTAMP" property="lockTime" />
+    <result column="fail_num" jdbcType="INTEGER" property="failNum" />
+    <result column="first_login" jdbcType="CHAR" property="firstLogin" />
+    <result column="creator" jdbcType="VARCHAR" property="creator" />
+    <result column="createtime" jdbcType="TIMESTAMP" property="createtime" />
+    <result column="modifier" jdbcType="VARCHAR" property="modifier" />
+    <result column="modifytime" jdbcType="TIMESTAMP" property="modifytime" />
+  </resultMap>
+  
+  <resultMap id="userInfoResultMap" type="com.tydic.traffic.crm.vo.UserInfo">
+    <result column="uname" jdbcType="VARCHAR" property="uname" />
+    <result column="ustatus" jdbcType="INTEGER" property="ustatus" />
+    <result column="eno" jdbcType="VARCHAR" property="eno" />
+    <result column="dno" jdbcType="VARCHAR" property="dno" />
+    <result column="ename" jdbcType="VARCHAR" property="ename" />
+    <result column="face_url" jdbcType="VARCHAR" property="faceUrl" />
+    <result column="station" jdbcType="VARCHAR" property="station" />
+  </resultMap>
+
+  <select id="queryUser" resultMap="userInfoResultMap" parameterType="com.tydic.traffic.crm.entity.TSysUser">
+     select u.uname,u.ustatus,e.eno,e.dno,e.ename,e.station,e.face_url from t_sys_user u,t_sys_employee e where u.eid=e.eid
+     and binary uname=#{uname} and binary upass=#{upass}
+  </select>
+  
+  <select id="queryPerCode" resultType="java.lang.String" parameterType="java.lang.String">
+       select per.code from t_sys_permission per
+		left join t_sys_role_ref_permission rfp on rfp.id=per.id
+		left join t_sys_user_ref_role rfr on rfp.rid=rfr.rid
+		left join t_sys_user u on rfr.uid=u.uid
+		where binary u.uname=#{uname}
+  </select>
+</mapper>

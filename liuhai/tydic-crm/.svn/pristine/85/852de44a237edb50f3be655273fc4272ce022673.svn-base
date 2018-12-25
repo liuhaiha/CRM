@@ -1,0 +1,188 @@
+var form;
+layui.use(['form', 'layedit', 'laydate'], function() {
+		form = layui.form(),
+		layer = layui.layer,
+		layedit = layui.layedit,
+		laydate = layui.laydate;
+
+	form.on('submit(save)', function(data) {
+		var jsonParam = JSON.stringify(data.field);
+		saveOrUpdate(jsonParam);
+		return false;
+	});
+	
+	checkFields(form,layedit);
+	
+	form.render();
+});
+var rowLen;
+function addLogRow()
+{
+	rowLen = $("#logitemTable").find("tr").length;
+	var trHtml = '<tr><td style="width:60px;height:50px;">';
+	trHtml+="工作" + (rowLen+1);
+	trHtml+="</td>";
+	trHtml+='<td style="width:180px;">';
+	trHtml+='<select name="itemList['+rowLen+'].logtype" id="logtype">';
+    for (var i = 0; i < logtypeList.length; i++)
+    {
+	  var childCode = logtypeList[i];
+	  trHtml += '<option value="'+childCode.code+'">'+childCode.name+'</option>';
+    }
+    trHtml+='</select></td>';
+	trHtml+='<td style="width:180px;">';
+	trHtml+='<select name="itemList['+rowLen+'].pid" id="pid">';
+	trHtml+="<option value=''>--请选择--</option>"
+	for(var i=0;i<proList.length;i++){
+		trHtml += '<option value="'+proList[i].pid+'">'+proList[i].shortName+'</option>';
+	}
+	trHtml+='</select></td>';
+    trHtml+='<td><textarea class="layui-textarea" name="itemList['+rowLen+'].content" id="content" style="width:99%;margin-left:10px;min-height:50px;" lay-verify="content_verify" placeholder="填写工作内容" maxlength="2000"></textarea></td>';
+    trHtml+='<td style="width:60px;"><i class="layui-icon" style="float:right;margin-right:10px;" onclick="delRow(this);">&#xe640;删除</i> </td></tr>';
+    $("#logitemTable").append(trHtml);
+    form.render("select");
+    return false;
+}
+$(this).click(function(){
+	var code = $("select[name='itemList["+rowLen+"].logtype']").val();
+	if(code == "01"){
+		$("select[name='itemList["+rowLen+"].pid']").prop("disabled",false);
+		
+	}else{
+		$("select[name='itemList["+rowLen+"].pid']").prop("disabled",true);
+	}
+});
+
+function delRow(obj)
+{
+	var tr = $(obj).parent().parent();
+	$(tr).remove();
+	resetSeq();
+}
+
+// 重新排序日志编号
+function resetSeq()
+{
+	$("#logitemTable").find("tr").each(function(idx,obj){
+		var tdArray = $(this).children();
+		tdArray.eq(0).html("工作" + (idx+1));//重新排序
+	});
+}
+
+function checkFields(form,layedit)
+{
+	// 自定义验证规则
+	var editIndex = layedit.build('LAY_demo_editor');
+	form.verify({
+		content_verify: [/\S/, '工作内容不能为空'],
+		total:function(){
+			if ($("#logitemTable").find("tr").length == 0)
+			{
+				return "至少要有一个工作项";
+			}
+		},
+		content: function(value) {
+			layedit.sync(editIndex);
+		}
+	});
+}
+
+function isNull(value)
+{
+	return value == undefined ||$.trim(value).length == 0;
+}
+
+var proList;
+var logtypeList;
+$(function(){
+	var worklog = {
+		init:function()
+		{
+			this.fillData();
+			this.getProject();
+		},
+		getProject:function(){
+			$.ajax({
+			      async: false,
+				  type: 'POST',
+				  url: '../sale/getAllProject?t=' + Math.random(),
+				  dataType: 'json',
+				  timeout: 60000,
+				  success:function(result){
+					  proList = result;
+					  var proStr;
+					  for(var i=0;i<result.length;i++){
+						  proStr += '<option value="'+result[i].pid+'">'+result[i].shortName+'</option>';
+					  }
+					  $("#pid").html(proStr);
+				  },error:function(XMLHttpRequest, textStatus, errorThrown) {
+				   	  alert('系统错误,请联系系统管理员');
+				   	  return false;
+				  }
+			});
+		},
+		fillData:function()
+		{
+			// 加载日志类型
+			$.ajax({
+			      async: false,
+				  type: 'POST',
+				  url: '../code/getCode?t=' + Math.random(),
+				  data:{"category":"00012"},
+				  dataType: 'json',
+				  timeout: 60000,
+				  success:function(code){
+					  if (code && code.childList&& code.childList.length>0)
+					  {
+						  logtypeList = code.childList;
+						  var len = logtypeList.length;
+						  var optionHtml = '';
+//						  var prefixStr = "<option value='choose'>--请选择--</option>"
+						  for (var i = 0; i < len; i++)
+						  {
+							  var childCode = logtypeList[i];
+							  optionHtml += '<option value="'+childCode.code+'">'+childCode.name+'</option>';
+						  }
+//						  optionHtml = prefixStr + optionHtml;
+						  $("#logtype").html(optionHtml);
+						  
+						  if (form)
+						  {
+							  form.render("select");
+						  }
+					  }
+				  },error:function(XMLHttpRequest, textStatus, errorThrown) {
+				   	  alert('系统错误,请联系系统管理员');
+				   	  return false;
+				  }
+			    }); 
+		}
+	}
+	worklog.init();
+});
+
+function saveOrUpdate(jsonData)
+{
+	$.ajax({
+	      async: true,
+		  type: 'POST',
+		  url: 'saveOrUpdLog?t=' + Math.random(),
+		  data:JSON.parse(jsonData),
+		  dataType: 'json',
+		  timeout: 60000,
+		  success:function(result){
+			  if (result && result.code == "1")
+			  {
+				  layer.msg('保存成功');
+				  location.href= 'toLogPage?t=' + Math.random();
+			  }
+			  else
+			  {
+				  layer.msg('保存失败,请联系系统管理员');
+			  }
+		  },error:function(XMLHttpRequest, textStatus, errorThrown) {
+		   	  alert('系统错误,请联系系统管理员');
+		   	  return false;
+		  }
+	    }); 
+}

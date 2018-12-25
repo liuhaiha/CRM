@@ -1,0 +1,421 @@
+package com.tydic.traffic.crm.service.impl;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+
+import com.tydic.traffic.crm.dao.TSysPermissionMapper;
+import com.tydic.traffic.crm.dao.TSysUserMapper;
+import com.tydic.traffic.crm.dao.TSysUserRefRoleMapper;
+import com.tydic.traffic.crm.entity.TSysPermission;
+import com.tydic.traffic.crm.entity.TSysUser;
+import com.tydic.traffic.crm.entity.TSysUserRefRole;
+import com.tydic.traffic.crm.service.SysUserService;
+import com.tydic.traffic.crm.utils.CommonUtil;
+import com.tydic.traffic.crm.vo.PermissChildMenu;
+import com.tydic.traffic.crm.vo.PermissMenu;
+import com.tydic.traffic.crm.vo.SysUserVo;
+import com.tydic.traffic.crm.vo.UserInfo;
+import com.tydic.traffic.tafa.daf.mybatis.tk.entity.Example;
+
+@Service(value = "sysUserService")
+public class SysUserServiceImpl implements SysUserService {
+
+	private static final Logger logger= LoggerFactory.getLogger(SysUserServiceImpl.class); 
+	@Resource
+	private TSysUserMapper tSysUserMapper;
+	
+	@Resource
+	private TSysUserRefRoleMapper tSysUserRefRoleMapper;
+	
+	@Resource
+	private TSysPermissionMapper tSysPermissionMapper;
+	
+	/**
+	 * 登录
+	 */
+	public UserInfo login(TSysUser user) {
+		
+		List<UserInfo> userList = null;
+		UserInfo userInfo = null;
+		try
+		{
+			userList = tSysUserMapper.queryUser(user);
+			if (CommonUtil.getLen(userList) == 0)
+			{
+				return null; // 用户或密码错误
+			}
+			userInfo = userList.get(0);
+			List<String> perCodeList = tSysUserMapper.queryPerCode(user.getUname());
+			userInfo.setPerCodeList(perCodeList);
+		}
+		catch(Exception ex)
+		{
+			logger.error("用户登录失败,参数={" + user.toString() + "}",ex);
+		}
+		
+		return userInfo;
+	}
+	
+	/**
+	 * 查询用户权限菜单
+	 */
+	public List<PermissMenu> queryPerMenu(List<String> perCodeList)
+	{
+		if (CommonUtil.getLen(perCodeList) == 0)
+		{
+			return new ArrayList<PermissMenu>();
+		}
+		Example example = new Example(TSysPermission.class);
+		Example.Criteria criteria = example.createCriteria();
+		criteria.andIn("code", perCodeList);
+		criteria.andEqualTo("type", "01");
+		List<PermissMenu> permissMenus = null;
+		try
+		{
+			List<TSysPermission> perList = tSysPermissionMapper.selectByExample(example);
+			permissMenus = buildMenu(perList);
+		}
+		catch(Exception ex)
+		{
+			logger.error("获取用户权限失败",ex);
+		}
+		return permissMenus;
+	}
+	
+	/**
+	 * 构建用户权限菜单
+	 * @param perList
+	 * @return
+	 */
+	private List<PermissMenu> buildMenu(List<TSysPermission> perList)
+	{
+		List<PermissMenu> menuList = new ArrayList<PermissMenu>();
+		
+		Collections.sort(perList, new Comparator<TSysPermission>() {
+			public int compare(TSysPermission o1, TSysPermission o2) 
+			{
+				if ("1".equals(o1.getPcode()) && !"1".equals(o2.getPcode()))
+				{
+					return -1;
+				}
+				
+				else if (!"1".equals(o1.getPcode()) && "1".equals(o2.getPcode()))
+				{
+					return 1;
+				}
+				return 0;
+			}
+		});
+	
+		boolean spread = true;
+		for (int i = 0; i < CommonUtil.getLen(perList);)
+		{
+			TSysPermission per = perList.get(0);
+			if ("1".equals(per.getPcode()))
+			{
+				PermissMenu menu = new PermissMenu();
+				menu.setTitle(CommonUtil.replaceNullStr(per.getTitle()));
+				menu.setIcon(CommonUtil.replaceNullStr(per.getIcon()));
+				menu.setSpread(spread);
+				spread = false;
+				menuList.add(menu);
+				List<TSysPermission> removeList = fillChild(menu,per,perList);
+				perList.removeAll(removeList);
+				perList.remove(per);
+			}
+			else
+			{
+				perList.remove(per);
+			}
+		}
+		return menuList;
+	}
+	
+	private List<TSysPermission> fillChild(PermissMenu rootMenu,TSysPermission per,List<TSysPermission> perList)
+	{
+		int len = CommonUtil.getLen(perList);
+		List<TSysPermission> removeList = new ArrayList<>();
+		for (int i = 0; i < len; i++)
+		{
+			TSysPermission per2 = perList.get(i);
+			if (per.getCode().equals(per2.getPcode()))
+			{
+				PermissChildMenu eleMenu = new PermissChildMenu();
+				eleMenu.setTitle(CommonUtil.replaceNullStr(per2.getTitle()));
+				eleMenu.setHref(CommonUtil.replaceNullStr(per2.getUrl()));
+				eleMenu.setIcon(CommonUtil.replaceNullStr(per2.getIcon()));
+				eleMenu.setSpread(false);
+				rootMenu.getChildren().add(eleMenu);
+				removeList.addAll(fillChild(eleMenu,per2,perList));
+				removeList.add(per2);
+			}
+		}
+		return removeList;
+	}
+	
+	/**
+	 * 修改个人密码
+	 */
+	public int updatePwd(TSysUser user, String newPwd)
+	{
+		Example example = new Example(TSysUser.class);
+		Example.Criteria c = example.createCriteria();
+		c.andEqualTo("uname", user.getUname());
+		c.andEqualTo("upass", user.getUpass());
+		List<TSysUser> userList = null;
+		try
+		{
+			userList= tSysUserMapper.selectByExample(example);
+		}
+		catch(Exception ex)
+		{
+			logger.error("修改用户密码错误,参数={" + user.toString() + ",newPwd="+newPwd+"}",ex);
+		}
+		if (CommonUtil.getLen(userList) == 0)
+		{
+			return -1; // 原密码错误
+		}
+		
+		TSysUser dbuser = userList.get(0);
+		dbuser.setUpass(newPwd);
+		
+		int  result = 0;
+		try
+		{
+			result = tSysUserMapper.updateByPrimaryKey(dbuser);
+		}
+		catch(Exception ex)
+		{
+			logger.error("修改用户密码失败,参数={" + dbuser.toString() +"}",ex);
+		}
+		return result;
+	}
+	
+	/**
+	 * 分配帐号
+	 */
+	public boolean aggsign(SysUserVo user)
+	{
+		user.setCreatetime(new Date());
+		user.setModifytime(new Date());
+		user.setModifier(user.getCreator());
+		user.setUstatus(1);
+		user.setFirstLogin("1");
+		try
+		{
+			tSysUserMapper.insert(user);
+			Example example = new Example(TSysUser.class);
+			Example.Criteria criteria = example.createCriteria();
+			criteria.andEqualTo("uname", user.getUname());
+			List<TSysUser> list = tSysUserMapper.selectByExample(example);
+			if (CommonUtil.getLen(list) == 0)
+			{
+				return false;
+			}
+			
+			TSysUser dbUser = list.get(0);
+			
+			if (StringUtils.isBlank(user.getRoleids()))
+			{
+				return true;
+			}
+			
+			int uid = dbUser.getUid();
+			String roleids = user.getRoleids();
+			String[] roleidArray =  roleids.split(",");
+			for (String roleid:roleidArray)
+			{
+				if (StringUtils.isBlank(roleid))
+				{
+					continue;
+				}
+				
+				TSysUserRefRole uRefR = new TSysUserRefRole();
+				uRefR.setRid(CommonUtil.replaceNullInt(roleid));
+				uRefR.setUid(uid);
+				tSysUserRefRoleMapper.insert(uRefR);
+			}
+			return true;
+		}
+		catch(Exception ex)
+		{
+			logger.error("分配帐号失败,参数={" + user.toString() +"}",ex);
+			return false;
+		}
+	}
+	
+	/**
+	 * 锁定或解锁用户帐号
+	 */
+	public boolean chageStatus(TSysUser user)
+	{
+		Example example = new Example(TSysUser.class);
+		Example.Criteria criteria = example.createCriteria();
+		criteria.andEqualTo("uname", user.getUname());
+		criteria.andEqualTo("eid", user.getEid());
+		List<TSysUser> list = tSysUserMapper.selectByExample(example);
+		if (CommonUtil.getLen(list) == 0)
+		{
+			return false;
+		}
+		TSysUser dbUser = list.get(0);
+		dbUser.setModifier(user.getModifier());
+		dbUser.setModifytime(new Date());
+		dbUser.setUstatus(user.getUstatus());
+		try
+		{
+			return tSysUserMapper.updateByPrimaryKey(dbUser) > 0;
+		}
+		catch(Exception ex)
+		{
+			logger.error("修改帐号状态出错,参数={" + user.toString() +"}",ex);
+			return false;
+		}
+	}
+	
+	/**
+	 * 重置密码
+	 */
+	public boolean resetPwd(TSysUser user)
+	{
+		Example example = new Example(TSysUser.class);
+		Example.Criteria criteria = example.createCriteria();
+		criteria.andEqualTo("uname", user.getUname());
+		criteria.andEqualTo("eid", user.getEid());
+		List<TSysUser> list = tSysUserMapper.selectByExample(example);
+		if (CommonUtil.getLen(list) == 0)
+		{
+			return false;
+		}
+		TSysUser dbUser = list.get(0);
+		dbUser.setModifier(user.getModifier());
+		dbUser.setModifytime(new Date());
+		dbUser.setUpass(user.getUpass());
+		try
+		{
+			return tSysUserMapper.updateByPrimaryKey(dbUser) > 0;
+		}
+		catch(Exception ex)
+		{
+			logger.error("重置密码时出错,参数={" + user.toString() +"}",ex);
+			return false;
+		}
+	}
+	
+	/**
+	 * 查询用户已授权的角色
+	 */
+	public List<TSysUserRefRole> queryRefRole(Integer uid)
+	{
+		Example example = new Example(TSysUserRefRole.class);
+		Example.Criteria criteria = example.createCriteria();
+		criteria.andEqualTo("uid", uid);
+		try
+		{
+			return tSysUserRefRoleMapper.selectByExample(example);
+		}
+		catch(Exception ex)
+		{
+			logger.error("查询用户角色时出错,参数={uid=" + uid +"}",ex);
+			return null;
+		}
+	}
+	
+	/**
+	 * 授权
+	 * @param uid 用户ID
+	 * @param roleids 授权的角色ID列表,以','分割
+	 * @return
+	 */
+	public boolean grant(Integer uid,String roleids)
+	{
+		Map<String, List<TSysUserRefRole>> operatorMap = operatorGroup(uid,roleids);
+		List<TSysUserRefRole> insertList = operatorMap.get(OPEARTOR_ADD);
+		List<TSysUserRefRole> delList = operatorMap.get(OPEARTOR_DEL);
+		try
+		{
+			if (CommonUtil.getLen(insertList) > 0)
+			{
+				for (TSysUserRefRole refRole:insertList)
+				{
+					tSysUserRefRoleMapper.insert(refRole);
+				}
+			}
+			
+			if (CommonUtil.getLen(delList) > 0)
+			{
+				for (TSysUserRefRole refRole:delList)
+				{
+					tSysUserRefRoleMapper.delete(refRole);
+				}
+			}
+			return true;
+		}
+		catch(Exception ex)
+		{
+			logger.error("用户授权时出错,参数={uid=" + uid +",roleids="+roleids+"}",ex);
+			return false;
+		}
+	}
+	
+	private static final String OPEARTOR_ADD = "INSERT";
+	private static final String OPEARTOR_DEL = "DELETE";
+	private Map<String, List<TSysUserRefRole>> operatorGroup(Integer uid,String roleids)
+	{
+		List<TSysUserRefRole> refRoleList = this.queryRefRole(uid);
+		Map<String, TSysUserRefRole> existMap = new HashMap<>();
+		for (int i = 0, len = CommonUtil.getLen(refRoleList); i < len; i++)
+		{
+			TSysUserRefRole refRole = refRoleList.get(i);
+			String key = refRole.getUid() + "_" + refRole.getRid();
+			existMap.put(key, refRole);
+		}
+		
+		String[] roleArray = roleids.split(",");
+		List<TSysUserRefRole> insertList = new ArrayList<>();
+		List<TSysUserRefRole> delList = new ArrayList<>();
+		for (String roleid:roleArray)
+		{
+			if (CommonUtil.isNull(roleid))
+			{
+				continue;
+			}
+			
+			String key = uid + "_" + roleid;
+			if (null != existMap.get(key))
+			{
+				existMap.remove(key);
+			}
+			else 
+			{
+				TSysUserRefRole refRole = new TSysUserRefRole();
+				refRole.setRid(CommonUtil.replaceNullInt(roleid));
+				refRole.setUid(uid);
+				insertList.add(refRole);
+			}
+		}
+		
+		java.util.Iterator<Map.Entry<String, TSysUserRefRole>> iterator = existMap.entrySet().iterator();
+		while (iterator.hasNext())
+		{
+			Map.Entry<String, TSysUserRefRole> entry = iterator.next();
+			delList.add(entry.getValue());
+		}
+		Map<String, List<TSysUserRefRole>> operatorMap = new HashMap<String, List<TSysUserRefRole>>();
+		operatorMap.put(OPEARTOR_DEL, delList);
+		operatorMap.put(OPEARTOR_ADD, insertList);
+		return operatorMap;
+	}
+}

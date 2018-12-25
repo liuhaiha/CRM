@@ -1,0 +1,54 @@
+
+<!-- ***************************************************************************************-->
+	<style>
+	<!--
+	font span{ font-size:15px; color: green;}
+	-->
+	</style>
+		
+	<tr>
+		<td colspan="20" align="right" height="35px">
+			共&nbsp;
+			<font id="jsrpagecount">
+			<span id="totalSizePro">0</span>
+			条记录&nbsp;
+			
+			共&nbsp;
+			<span id="totalPagePro">0</span>
+			</font>&nbsp;页&nbsp;&nbsp;当前第&nbsp;
+			<font id="jsrcurrentpage"><span id="pageNumberPro">1</span>
+			</font>&nbsp;页&nbsp;&nbsp;&nbsp;&nbsp;
+			
+			<img src="/crm/res/pages/frame/dataview/images/fy_dy.jpg" onclick="topagepro('tofirst')" style="cursor: pointer;" />
+			&nbsp;
+			<img src="/crm/res/pages/frame/dataview/images/fy_sy.jpg" onclick="changePagepro('last')" style="cursor: pointer;" />
+			&nbsp;
+			<img src="/crm/res/pages/frame/dataview/images/fy_xy.jpg" onclick="changePagepro('next')" style="cursor: pointer;" />
+			&nbsp;
+			<img src="/crm/res/pages/frame/dataview/images/fy_zh.jpg" onclick="topagepro('tolast')"; style="cursor: pointer;" />
+			每页显示
+			<input type="text" style="width: 25px" id="pageSizePro"  onchange="jpagePro()" value="4" maxlength="3"/>			
+			&nbsp;&nbsp;&nbsp; 跳转到第&nbsp;
+			<select id="jpageNumberPro" onchange="tpagePro()" style="width: 40px;"> </select>
+			&nbsp;页
+		</td>
+	</tr>
+	<script type="text/javascript">
+	
+	// 加载分页信息
+	function loadpagePro(totalitem) {
+		var pageSize = $("#pageSizePro").val(); // 每页显示多少条
+		var totalPage = totalitem % pageSize == 0 ? totalitem / pageSize : (Math.ceil(totalitem / pageSize)); // 总共多少页
+		$("#totalPagePro").text(totalPage);
+		$("#totalSizePro").text(totalitem);
+		$("#jpageNumberPro").html("");
+		var ht = "";
+		for ( var k = 1; k <= totalPage; k++) {
+			ht += "<option value='" + k + "'>" + k + "</option>";
+		}
+		$("#jpageNumberPro").html(ht);
+		$("#jpageNumberPro").val($("#pageNumberPro").text());
+	}
+	</script>
+	
+<!-- ***************************************************************************************-->

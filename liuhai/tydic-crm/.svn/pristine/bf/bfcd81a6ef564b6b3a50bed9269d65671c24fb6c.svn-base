@@ -1,0 +1,361 @@
+
+
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<title>新客户交流</title>
+		<meta name="renderer" content="webkit">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="format-detection" content="telephone=no">
+
+		<link rel="stylesheet" href="../../plugins/layui/css/layui.css" media="all" />
+		
+		
+		<link rel="stylesheet" href="../../css/global.css" media="all">
+		<link rel="stylesheet" href="../../css/font-awesome.min.css" media="all">
+	</head>
+
+	<body style="min-width:1024px;">
+		<div class="admin-main" id="parentDiv">
+			<div id="projDiv" style="border:2px solid #000;border-color:#1AA094;">
+				
+				<fieldset  style="border:2px solid #1AA094;">
+					<legend align="left" style="font-weight:bold;color:#B22222;">单位基本资料</legend>
+					<p>
+					<ul>
+						
+					<table class="site-table table-hover" >
+						<thead>
+							<tr>
+								<td style="width:12%;font-size:14px;text-align:right;">
+									 客户名称：
+								</td>
+								<td style="width:32%;font-size:14px;">
+									<input type="text" style="width:98%;height:30px;" value="广州市公安局交警局">
+								</td>
+								<td style="width:12%;font-size:14px;text-align:right;"> 
+									 所属区域：
+								</td>
+								<td style="width:28%;font-size:14px;">
+									<select name="area" style="width:80%;height:30px;">
+										<option value="华南区">华南区</option>
+										<option value="华东区">华东区</option>
+										<option value="华中区">华中区</option>
+										<option value="华北区">华北区</option>
+									</select>
+								</td>
+								<td>
+								</td>
+							</tr>
+							<tr>
+								<td style="width:12%;font-size:14px;text-align:right;">
+									 单位地址：
+								</td>
+								<td style="width:32%;font-size:14px;">
+									<input type="text" style="width:98%;height:30px;" value="广州市天河区华观路1006号">
+								</td>
+								<td style="width:12%;font-size:14px;text-align:right;"> 
+									 所属省份：
+								</td>
+								<td style="width:28%;font-size:14px;">
+									<select name="prov" style="width:80%;height:30px;">
+										<option value="广东省">广东省</option>
+										<option value="广西省">广西省</option>
+										<option value="江西省">江西省</option>
+										<option value="海南省">海南省</option>
+									</select>
+								</td>
+								<td>
+								</td>
+							</tr>
+							<tr>
+								<td style="width:12%;font-size:14px;text-align:right;">
+									 客户来源：
+								</td>
+								<td style="width:32%;font-size:14px;">
+									
+									<select name="prov" style="width:98%;height:30px;">
+										<option selected="" value="全国交通会带动项目">全国交通会带动项目</option>
+										<option value="客户主动联系">客户主动联系</option>
+										<option value="已有客户推荐">已有客户推荐</option>
+										<option value="其他厂商引荐">其他厂商引荐</option>
+										<option value="上级部门指派引荐">上级部门指派引荐</option>
+										<option value="DIC关系客户">DIC关系客户</option>
+										<option value="陌拜客户">陌拜客户</option>
+										<option value="其它（请说明）">其它（请说明）</option>
+									</select>
+								</td>
+								<td style="width:12%;font-size:14px;text-align:right;">
+									 单位类别：
+								</td>
+								<td style="width:28%;font-size:14px;">
+									<select id="u132_input" style="width:80%;height:30px;">
+										<option value="省公安厅">省公安厅</option>
+										<option value="地市公安局">地市公安局</option>
+										<option value="县区公安分局">县区公安分局</option>
+										<option value="省交管局 / 总队">省交管局 / 总队</option>
+										<option selected="" value="地市交管局 / 支队">地市交管局 / 支队</option>
+										<option value="县区大队">县区大队</option>
+									</select>
+								</td>
+								<td>
+									
+									
+								</td>
+							</tr>
+						</thead>
+						<tbody>
+						</tbody>
+					</table>
+					</ul>	
+					</p>
+				</fieldset>
+				
+				
+				
+				
+				<!--- 新增客户与会人员--->
+				<fieldset  style="border:2px solid #1AA094;">
+					<legend align="left" style="font-weight:bold;color:#B22222;">新增客户与会人员</legend>
+					<p>
+					<ul>
+						
+					<table class="site-table table-hover" >
+							<tr style="background-color:#1AA094;">
+								<td colspan="8">
+									<div class="layui-tab admin-nav-card layui-tab-brief" style="height:40px;">
+										<ul class="layui-tab-title">
+											<li class="layui-this" style="width:99%;">
+												<i class="layui-icon" style="float:right;margin-right:10px;">&#xe640;删除</i> 
+												<i class="layui-icon" style="float:right;margin-right:10px;" onclick="addlinkman();">新增</i> 
+											</li>
+										</ul>
+									</div>
+								</td>
+								
+							</tr>
+							<tr style="font-size:14px;height:35px;">
+								<th style="font-size:14px;">选择</th>
+								<th style="font-size:14px;">姓名</th>
+								<th style="font-size:14px;">性别</th>
+								<th style="font-size:14px;">部门</th>
+								<th style="font-size:14px;">上级部门</th>
+								<th style="font-size:14px;">职务</th>
+								<th style="font-size:14px;">电话号码</th>
+								<th style="font-size:14px;">E-Mail</th>
+							</tr>
+							<tr style="font-size:14px;height:35px;">
+								<th style="font-size:14px;"><input type="checkbox"></th>
+								<th style="font-size:14px;">张三</th>
+								<th style="font-size:14px;">男</th>
+								<th style="font-size:14px;">指挥中心</th>
+								<th style="font-size:14px;">指挥科</th>
+								<th style="font-size:14px;">科长</th>
+								<th style="font-size:14px;">13521566666</th>
+								<th style="font-size:14px;">123@qq.com</th>
+							</tr>
+							<tr style="font-size:14px;height:35px;">
+								<th style="font-size:14px;"><input type="checkbox"></th>
+								<th style="font-size:14px;">张三</th>
+								<th style="font-size:14px;">男</th>
+								<th style="font-size:14px;">指挥中心</th>
+								<th style="font-size:14px;">指挥科</th>
+								<th style="font-size:14px;">科长</th>
+								<th style="font-size:14px;">13521566666</th>
+								<th style="font-size:14px;">123@qq.com</th>
+							</tr>
+							
+						<tbody>
+						</tbody>
+					</table>
+					</ul>	
+					</p>
+				</fieldset>
+				
+				<!--- 交流侧重点：--->
+				<fieldset  style="border:2px solid #1AA094;">
+					<legend align="left" style="font-weight:bold;color:#B22222;">交流侧重点</legend>
+					<p>
+					<ul>
+						<fieldset style="border:0px;">
+						<legend align="left" style="font-weight:bold;">1、交流侧重点：</legend>
+							<table style="border:0px;font-size:14px;margin:5px;min-width:700px;line-height:35px;">
+								<tr>
+									<td style="width:50%;"><input type="radio" name="">有高层领导，偏重功能效果，简化技术</td>
+									<td><input type="radio" name="">对方需求不清楚，能力全面介绍，概述为主</td>
+								</tr>
+								<tr>
+									<td><input type="radio" name="">技术部门为主，技术实现需能解释清楚</td>
+									<td><input type="radio" name="">信息较少，无要求，标准材料介绍即可</td>
+								</tr>
+							</table>
+						</fieldset>
+						
+						<fieldset style="border:0px;">
+						<legend align="left" style="font-weight:bold;">2、交流主题：</legend>
+							<table style="border:0px;font-size:14px;margin:5px;min-width:700px;line-height:35px;">
+								<tr>
+									<td style="width:50%;"><input type="checkbox" name="">全面、综合性介绍</td>
+									<td><input type="checkbox" name="">交警政工平台</td>
+								</tr>
+								<tr>
+									<td><input type="checkbox" name="">交警大数据</td>
+									<td><input type="checkbox" name="">车管所相关</td>
+								</tr>
+								<tr>
+									<td><input type="checkbox" name="">交警指挥平台</td>
+									<td><input type="checkbox" name="">主题不清晰</td>
+								</tr>
+								<tr>
+									<td><input type="checkbox" name="">交警勤务平台</td>
+									<td><input type="checkbox" name="">其他&nbsp;&nbsp;<input type="input" name=""></td>
+								</tr>
+							</table>
+						</fieldset>
+				</fieldset>
+				
+				<!--- 项目整体介绍：--->
+				<fieldset  style="border:2px solid #1AA094;">
+					<legend align="left" style="font-weight:bold;color:#B22222;">项目整体介绍</legend>
+					<p>
+					<ul>
+					<table style="border:0px;font-size:14px;margin:5px;min-width:700px;line-height:35px;margin-left:15px;border-collapse:separate;border-spacing:0px 10px;">
+								<tr>
+									<td style="width:50px;">状态：</td>
+									<td colspan="3">
+										<input type="radio" name="">已有具体项目&nbsp;&nbsp;
+										<input type="input" name="" style="width:300px;">
+										</br>
+										<input type="radio" name="">无项目，向客户整体介绍公司及交管建设成果
+									</td>
+								</tr>
+								<tr>
+									<td style="text-align:right;">1、&nbsp;&nbsp;</td>
+									<td colspan="3" style="vertical-align:middle;">
+										<input type="radio" name="">酝酿期&nbsp;&nbsp;
+										<input type="radio" name="">工可设计期&nbsp;&nbsp;
+										<input type="radio" name="">立项期&nbsp;&nbsp;
+										<input type="radio" name="">招投标期&nbsp;&nbsp;
+									</td>
+								</tr>
+								<tr>
+									<td style="text-align:right;">2、&nbsp;&nbsp;</td>
+									<td style="text-align:right;">
+										项目金额：
+									</td>
+									<td colspan="2">
+										<input type="input" name="" style="width:120px;">万元
+									</td>
+								</tr>
+								<tr>
+									<td style="text-align:right;">3、&nbsp;&nbsp;</td>
+									<td style="text-align:right;">
+										预计招标时间：
+									</td>
+									<td colspan="2">
+										<input type="input" name="" style="width:120px;">
+									</td>
+								</tr>
+								<tr>
+									<td style="text-align:right;">4、&nbsp;&nbsp;</td>
+									<td style="text-align:right;">
+										项目期数：
+									</td>
+									<td colspan="2">
+										<input type="input" name="" style="width:120px;">
+										期（如果不是第1期，请在备注里概括前期建设情况）
+									</td>
+								</tr>
+								<tr>
+									<td style="text-align:right;">5、&nbsp;&nbsp;</td>
+									<td colspan="3">
+										客户是否明确要求与第三方公司合作：
+										<input type="radio" name="">是&nbsp;&nbsp;<input type="radio" name="">否
+									</td>
+								</tr>
+								<tr>
+									<td style="text-align:right;">6、&nbsp;&nbsp;</td>
+									<td colspan="3">
+										我方最可能中标的角色是：
+										<input type="radio" name="">总包&nbsp;&nbsp;
+										<input type="radio" name="">分包&nbsp;&nbsp;
+										<input type="radio" name="">其他
+									</td>
+								</tr>
+								<tr>
+									<td style="text-align:right;">7、&nbsp;&nbsp;</td>
+									<td style="vertical-align:middle;text-align:right;width:115px;">
+										项目硬件平台：
+									</td>
+									<td colspan="2">
+										<textarea style="width:400px;vertical-align:middle;" rows="3" placeholder=""></textarea>
+									</td>
+								</tr>
+								<tr>
+									<td style="text-align:right;">8、&nbsp;&nbsp;</td>
+									<td style="vertical-align:middle;text-align:right;width:115px;">
+										项目技术平台：
+									</td>
+									<td colspan="2">
+										<textarea style="width:400px;vertical-align:middle;" rows="3" placeholder="项目的技术平台简要描述"></textarea>
+									</td>
+								</tr>
+								<tr>
+									<td style="text-align:right;">9、&nbsp;&nbsp;</td>
+									<td style="vertical-align:middle;text-align:right;width:115px;">
+										项目云平台：
+									</td>
+									<td colspan="2">
+										<textarea style="width:400px;vertical-align:middle;" rows="3" placeholder="如果项目需要上云，云平台简要描述"></textarea>
+									</td>
+								</tr>
+								<tr>
+									<td style="text-align:right;">10、&nbsp;&nbsp;</td>
+									<td style="vertical-align:middle;text-align:right;width:115px;">
+										项目大数据平台：
+									</td>
+									<td>
+										<textarea style="width:400px;vertical-align:middle;" rows="3" placeholder="如果项目需要用到大数据，大数据平台简要描述"></textarea>
+									</td>
+									<td>
+									<button class="layui-btn layui-btn-small" lay-submit=""
+										lay-filter="btnSearch">
+										<i class="layui-icon">&#xe641;</i> 提交申请
+									</button>
+									</td>
+								</tr>
+							</table>
+					
+				</fieldset>
+			</div>
+			
+			
+			</div>
+			
+			
+		
+		</div>
+		
+		<script type="text/javascript" src="../../plugins/layui/layui.js"></script>
+		<script src="../../js/jquery-1.8.1.min.js" type="text/javascript"></script>
+		<script>
+		var layer;
+		layui.config({
+				base: '../../plugins/layui/modules/'
+			});
+		layui.use(['form', 'layer', 'laydate'], function() {
+			var form = layui.form(),
+				layer = layui.layer;
+			
+		});
+		
+		
+
+		</script>
+	</body>
+
+</html>

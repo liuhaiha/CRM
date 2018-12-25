@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tydic.traffic.crm.dao.TSysRoleMapper">
+  <resultMap id="BaseResultMap" type="com.tydic.traffic.crm.entity.TSysRole">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="rid" jdbcType="INTEGER" property="rid" />
+    <result column="rname" jdbcType="VARCHAR" property="rname" />
+    <result column="rdesc" jdbcType="VARCHAR" property="rdesc" />
+    <result column="creator" jdbcType="VARCHAR" property="creator" />
+    <result column="createtime" jdbcType="TIMESTAMP" property="createtime" />
+    <result column="modifier" jdbcType="VARCHAR" property="modifier" />
+    <result column="modifytime" jdbcType="TIMESTAMP" property="modifytime" />
+  </resultMap>
+
+	<sql id="Base_Column_List">
+		rid,rname,rdesc,creator,createtime,modifier,modifytime
+	</sql>
+  <select id="selectByPage" resultMap="BaseResultMap" parameterType="com.tydic.traffic.crm.vo.TSysRoleVo">
+    select 
+	<include refid="Base_Column_List"></include>
+	from t_sys_role
+    <where>
+    	1 = 1
+    	<if test="rname != null and rname != ''">
+    		and rname like concat('%',concat(#{rname,jdbcType=VARCHAR},'%'))
+    	</if>
+    	<if test="rdesc != null and rdesc != ''">
+    		and rdesc like concat('%',concat(#{rdesc,jdbcType=VARCHAR},'%'))
+    	</if>
+    	<if test="creator != null and creator != ''">
+    		and creator = #{creator,jdbcType=VARCHAR}
+    	</if>
+    	<if test="beginDate != null">
+    		<![CDATA[ and createtime >= #{beginDate} ]]>
+    	</if>
+    	<if test="endDate != null">
+    		<![CDATA[ and createtime <= #{endDate} ]]>
+    	</if>
+    	<if test="modifier != null and modifier != ''">
+    		and modifier = #{modifier,jdbcType=VARCHAR}
+    	</if>
+    </where>
+    order by modifytime desc
+  </select>
+  
+</mapper>

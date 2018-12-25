@@ -1,0 +1,698 @@
+var pageNumber = parseInt($("#pageNumber").text() == ""?"1":$("#pageNumber").text());
+var pageSize = $("#pageSize").val() == undefined?"10":$("#pageSize").val();
+var totalPage = 0;
+
+var code;
+//显示数据字典树形列表
+refleshTree();
+function refleshTree() {
+	$("#dept_tree").html("");
+	layui.use('tree', function() {
+		$.ajax({
+			type     : 'GET',
+			url      : 'list',
+			dataType : 'json',
+			async    : true,
+			success  : function(result) {
+				layui.tree({
+				  	elem: '#dept_tree' //传入元素选择器
+				  	,click: function(item) {
+				  		code = item.alias;
+				  		employee.queryEmp(code);
+				  	},nodes: result
+				});
+			}
+		});
+	});
+}
+
+var employee = {};
+
+$(function(){
+//	var pageNumber = 1;
+//	var pageSize = 10;
+//	var totalPage = 0;
+	var workTypeCode; //区域字典数据
+	employee = {
+		init:function()
+		{
+			this.queryEmp();
+			this.bindEvent();
+			this.fillData();
+		},
+		queryEmp:function(code)
+		{
+			
+			var ename = $("#ename").val();
+			var linkphone = $("#linkphone").val();
+			var beginDate = $("#beginDate").val();
+			var endDate = $("#endDate").val();
+			var station = $("#station").val();
+			
+			if (code == null) {
+				var code = $("#dno").val();
+			}
+			
+			$.ajax({
+			      async: true,
+				  type: 'POST',
+				  url: 'queryEmpByPage?t=' + Math.random(),
+				  data:{"pageNumber":pageNumber,"pageSize":pageSize, "ename":ename,"linkphone":linkphone,"dno":code,"beginDate":beginDate,"endDate":endDate,"station":station},
+				  dataType: 'json',
+				  timeout: 60000,
+				  success:function(page){
+					  totalPage = page.totalPage;
+					  var tbodyHtml = '';
+					  if (page.results && page.results.length > 0)
+					  {
+						  var len = page.results.length;
+						  var html = "";
+						  var trTemplate = '<tr style="font-size:14px;height:35px;"><th style="font-size:14px;"><input type="checkbox" name="eid" value="{0}"></th>'
+						  					+'<th style="font-size:14px;">{1}</th><th style="font-size:14px;">{2}</th><th style="font-size:14px;">{3}</th>'
+						  					+'<th style="font-size:14px;">{4}</th><th style="font-size:14px;">{5}</th>'
+						  					+'<th style="font-size:14px;">{7}</th><th style="font-size:14px;">{8}</th><th style="font-size:14px;">{9}</th>'
+						  					+'<th style="font-size:14px;">{11}</th><th style="font-size:14px;">{12}</th></tr>';
+
+						  for (var i = 0; i < len; i++)
+						  {
+							  var emp = page.results[i];
+							  var trHtml = trTemplate;
+							  trHtml = trHtml.replace("{0}",emp.eid);
+							  trHtml = trHtml.replace("{1}",replaceNull(emp.eno));
+							  trHtml = trHtml.replace("{2}",replaceNull(emp.ename));
+							  trHtml = trHtml.replace("{3}",replaceNull(emp.deptName));
+							  trHtml = trHtml.replace("{4}",replaceNull(emp.statName));
+							  trHtml = trHtml.replace("{5}",replaceNull(emp.sex));
+							  //trHtml = trHtml.replace("{6}",replaceNull(emp.linkphone));
+							  trHtml = trHtml.replace("{7}",replaceNull(emp.telephone));
+							  if (replaceNull(emp.hiredate).length > 10)
+							  {
+								  trHtml = trHtml.replace("{8}",emp.hiredate.substr(0,10));
+							  }
+							  else
+							  {
+								  trHtml = trHtml.replace("{8}",replaceNull(emp.hiredate));
+							  }
+							  trHtml = trHtml.replace("{9}",replaceNull(emp.creator));
+							  /*if (replaceNull(emp.createtime).length > 16)
+							  {
+								  trHtml = trHtml.replace("{10}",replaceNull(emp.createtime).substr(0,16));
+							  }
+							  else
+							  {
+								  trHtml = trHtml.replace("{10}",replaceNull(emp.createtime));
+							  }*/
+							  if (replaceNull(emp.modifytime).length > 16)
+							  {
+								  trHtml = trHtml.replace("{11}",replaceNull(emp.modifytime).substr(0,16));
+							  }
+							  else
+							  {
+								  trHtml = trHtml.replace("{11}",replaceNull(emp.modifytime));
+							  }
+							  
+							  var operaorHtml = "";
+							  if (emp.ustatus==undefined || emp.ustatus=='')
+							  {
+								  operaorHtml = "<button class='layui-btn layui-btn-small layui-btn-radius layui-btn-warm' onclick=\"aggsign('"+emp.eid+"','"+emp.eno+"')\">开通帐号</button>";
+							  }
+							  else
+							  {
+								  if (emp.ustatus == "1")
+								  {
+									  operaorHtml = "<button class='layui-btn layui-btn-small layui-btn-radius layui-btn-normal' onclick=\"grant('"+emp.eno+"','"+emp.uid+"')\">帐号授权</button>";
+									  operaorHtml += "<button class='layui-btn layui-btn-small layui-btn-radius layui-btn-danger' onclick=\"lock('"+emp.eid+"','"+emp.eno+"')\">帐号锁定</button>";
+									  operaorHtml+="<button class='layui-btn layui-btn-small layui-btn-radius' onclick=\"resetPwd('"+emp.eid+"','"+emp.eno+"')\">重置密码</button>";
+								  }
+								  if (emp.ustatus == "2")
+								  {
+									  operaorHtml = "<button class='layui-btn layui-btn-small layui-btn-radius layui-btn-danger' onclick=\"unlock('"+emp.eid+"','"+emp.eno+"')\">解锁帐号</button>";
+								  }
+							  }
+							  trHtml = trHtml.replace("{12}",operaorHtml);
+							  tbodyHtml+=trHtml;
+						  }
+					  }
+					  $("#empTbody").html(tbodyHtml);
+					  
+					  loadpageList(page.totalSize);
+					  $("#totalSizePro").html(page.totalSize);
+					  $("#totalPagePro").html(page.totalPage);
+					  
+					  $("#empTbody").delegate("tr","mouseenter",function(){
+			    			$(this).css("background-color","#FDE5B2")
+			    			$(this).siblings().css("background-color","#fff")
+			    			});
+				  },error:function(XMLHttpRequest, textStatus, errorThrown) {
+				   	  alert('系统错误,请联系系统管理员');
+				   	  return false;
+				  }
+			    }); 
+		},
+		fillData:function()
+		{
+			$.ajax({
+			      async: true,
+				  type: 'POST',
+				  url: '../code/getMultCode?t=' + Math.random(),
+				  data:{"category":"00015,00016"},
+				  dataType: 'json',
+				  timeout: 60000,
+				  success:function(codeList){
+					  if (codeList.length > 0)
+					  {
+						 var deptCode = codeList[0];
+						 if (deptCode.childList&& deptCode.childList.length>0)
+						 {
+							 var childList = deptCode.childList;
+							  var len = childList.length;
+							  var optionHtml = '<option value="">--请选择--</option>';
+							  for (var i = 0; i < len; i++)
+							  {
+								  var childCode = childList[i];
+								  optionHtml += '<option value="'+childCode.code+'">'+childCode.name+'</option>';
+							  }
+							  $("#dno").html(optionHtml);
+						 }
+						 
+						 var stationCode = codeList[1];
+						 if (stationCode.childList&& stationCode.childList.length>0)
+						 {
+							 var childList = stationCode.childList;
+							  var len = childList.length;
+							  var optionHtml = '<option value="">--请选择--</option>';
+							  for (var i = 0; i < len; i++)
+							  {
+								  var childCode = childList[i];
+								  optionHtml += '<option value="'+childCode.code+'">'+childCode.name+'</option>';
+							  }
+							  $("#station").html(optionHtml);
+						 }
+					  }
+				  },error:function(XMLHttpRequest, textStatus, errorThrown) {
+				   	  alert('系统错误,请联系系统管理员');
+				   	  return false;
+				  }
+			    }); 
+			
+			$.ajax({
+			      async: true,
+				  type: 'POST',
+				  url: '../role/queryRole?t=' + Math.random(),
+				  dataType: 'json',
+				  timeout: 60000,
+				  success:function(result){
+					  if (result.code && result.code=="1")
+					  {
+						 var roleList = result.data;
+						 if (roleList&& roleList.length>0)
+						 {
+							  var len = roleList.length;
+							  var checkHtml = '';
+							  var checkGrantHtml = '';
+							  for (var i = 0; i < len; i++)
+							  {
+								  var role = roleList[i];
+								  checkHtml += '<input type="checkbox" name="role" value="'+role.rid+'">' + role.rname;
+								  checkGrantHtml += '<input type="checkbox" name="grantRole" value="'+role.rid+'">' + role.rname;
+								  if (i != 0 && (i+1) % 2 == 0)
+								  {
+									  checkHtml+="<br>";
+									  checkGrantHtml+="<br>";
+								  }
+							  }
+							  $("#roleTd").html(checkHtml);
+							  $("#roleGrantTd").html(checkGrantHtml);
+						 }
+						
+					  }
+				  },error:function(XMLHttpRequest, textStatus, errorThrown) {
+				   	  alert('系统错误,请联系系统管理员');
+				   	  return false;
+				  }
+			    }); 
+			
+		},
+		delEmp:function(callback)
+		{
+			var eids = "";
+			
+			var checkArray = $("input[name='eid']:checked");
+			if (checkArray.length == 0)
+			{
+				 layer.msg("请选择要删除的员工信息");
+				return;
+			}
+			
+			for (var i =0,len = checkArray.length; i < len; i++)
+			{
+				eids+=$(checkArray[i]).val();
+				if (i != len-1)
+				{
+					eids+=",";
+				}
+			}
+			
+			
+			layer.confirm('确认删除?',{
+				title:''
+				,btn:['确认', '取消']
+				,btn1:function(index,layerno)
+				{
+					$.ajax({
+					      async: true,
+						  type: 'POST',
+						  url: 'delEmp?t=' + Math.random(),
+						  data:{"eids":eids},
+						  dataType: 'json',
+						  timeout: 60000,
+						  success:function(result){
+							  if (result.code == "1")
+							  {
+								  layer.msg("删除成功");
+								  callback();
+							  }
+							  else
+							  {
+								  layer.msg('删除失败，请联系系统管理员');
+							  }
+						  },error:function(XMLHttpRequest, textStatus, errorThrown) {
+						   	  alert('系统错误,请联系系统管理员');
+						   	  return false;
+						  }
+					    }); 
+				}
+				})
+		},
+		bindEvent:function()
+		{
+			var queryEmp = this.queryEmp;
+			$("#first_page").click(function(){
+					pageNumber = 1;
+					queryEmp();
+				}
+			)
+			
+			$("#pre_page").click(function(){
+					pageNumber-=1;
+					if (pageNumber < 1)pageNumber=1;
+					queryEmp();
+				}
+			)
+			
+			$("#next_page").click(function(){
+					pageNumber+=1;
+					if (pageNumber > totalPage)pageNumber=totalPage;
+					queryEmp();
+				}
+			)
+			
+			$("#last_page").click(function(){
+					pageNumber=totalPage;
+					queryEmp();
+				}
+			)
+			
+			$("#btnSearch").click(function(){
+				code = null;
+				queryEmp();
+			})
+			
+			var delEmp = this.delEmp;
+			$("#btnDel").click(function(){
+				delEmp(queryEmp);
+			});
+			
+			$("#btnAdd").click(function(){
+				location.href="toEmpAddPage";
+			});
+			
+			$("#btnEdit").click(function(){
+				var checkArray = $("input[name='eid']:checked");
+				if (checkArray.length == 0)
+				{
+					layer.msg("请选择要编辑的人员");
+					return;
+				}
+				
+				if (checkArray.length > 1)
+				{
+					layer.msg("不允许同时编辑多个人员信息");
+					return;
+				}
+				var eid = $(checkArray[0]).val();
+				location.href="toEmpEditPage?eid=" + eid;
+			});
+		}
+	}
+	employee.init();
+});
+
+function aggsign(eid,eno)
+{
+	$("#uname").val(eno);
+	
+	$("input[name='role']:checked").each(function(idx,elemt){
+		$(this).attr("checked",false);
+	});
+	
+	layer.open({
+		  title: '分配帐号'
+		  ,type: 1
+		  ,content: $('#userDiv')
+		  ,shade:false
+		  ,shadeClose:false
+		  ,btn: ['确认', '取消']
+		  ,yes: function(index, layero){
+			 if ($.trim($("#upass").val()) == '')
+			 {
+				 alert("初始密码不能为空");
+			 }
+			 else
+			 {
+				 aggsignSubmit(eid,eno);
+				 layer.close(index); 
+			 }
+		  }
+		  ,cancel: function(index, layero){ 
+			layer.close(index); 
+		  }});
+}
+
+function aggsignSubmit(eid,eno)
+{
+	var uname = $("#uname").val();
+	var upass = $("#upass").val();
+	var roleids = "";
+	$("input[name='role']:checked").each(function(idx,elemt){
+		roleids+=$(this).val()+",";
+	});
+	upass=pidCrypt.SHA256(upass);
+	$.ajax({
+	      async: true,
+		  type: 'POST',
+		  url: '../user/aggsign?t=' + Math.random(),
+		  dataType: 'json',
+		  data:{"eid":eid,"uname":uname,"upass":upass,"roleids":roleids},
+		  timeout: 60000,
+		  success:function(result){
+			  if (result.code && result.code=="1")
+			  {
+				 var roleList = result.data;
+				 if (roleList&& roleList.length>0)
+				 {
+					  var len = roleList.length;
+					  var checkHtml = '';
+					  for (var i = 0; i < len; i++)
+					  {
+						  var role = roleList[i];
+						  checkHtml += '<input type="checkbox" name="role" value="'+role.rid+'">' + role.rname;
+						  if (i != 0 && (i+1) % 2 == 0)
+						  {
+							  checkHtml+="<br><br>";
+						  }
+					  }
+					  $("#roleTd").html(checkHtml);
+				 }
+				 $("#btnSearch").trigger("click");
+			  }
+			  else
+			  {
+				  alert('分配帐号失败,请联系系统管理员');
+			  }
+		  },error:function(XMLHttpRequest, textStatus, errorThrown) {
+		   	  alert('系统错误,请联系系统管理员');
+		   	  return false;
+		  }
+	    }); 
+}
+
+function lock(eid,eno)
+{
+	$.ajax({
+	      async: true,
+		  type: 'POST',
+		  url: '../user/lock?t=' + Math.random(),
+		  dataType: 'json',
+		  data:{"eid":eid,"uname":eno},
+		  timeout: 60000,
+		  success:function(result){
+			  if (result.code && result.code=="1")
+			  {
+				 $("#btnSearch").trigger("click");
+			  }
+			  else
+			  {
+				  alert('帐号锁定失败,请联系系统管理员');
+			  }
+		  },error:function(XMLHttpRequest, textStatus, errorThrown) {
+		   	  alert('系统错误,请联系系统管理员');
+		   	  return false;
+		  }
+	    }); 
+}
+
+function unlock(eid,eno)
+{
+	$.ajax({
+	      async: true,
+		  type: 'POST',
+		  url: '../user/unlock?t=' + Math.random(),
+		  dataType: 'json',
+		  data:{"eid":eid,"uname":eno},
+		  timeout: 60000,
+		  success:function(result){
+			  if (result.code && result.code=="1")
+			  {
+				 $("#btnSearch").trigger("click");
+			  }
+			  else
+			  {
+				  alert('帐号解锁失败,请联系系统管理员');
+			  }
+		  },error:function(XMLHttpRequest, textStatus, errorThrown) {
+		   	  alert('系统错误,请联系系统管理员');
+		   	  return false;
+		  }
+	    }); 
+}
+
+function resetPwd(eid,eno)
+{
+	$.ajax({
+	      async: true,
+		  type: 'POST',
+		  url: '../user/resetPwd?t=' + Math.random(),
+		  dataType: 'json',
+		  data:{"eid":eid,"uname":eno},
+		  timeout: 60000,
+		  success:function(result){
+			  if (result.code && result.code=="1")
+			  {
+				  alert('密码重置成功');
+				 $("#btnSearch").trigger("click");
+			  }
+			  else
+			  {
+				  alert('帐号解锁失败,请联系系统管理员');
+			  }
+		  },error:function(XMLHttpRequest, textStatus, errorThrown) {
+		   	  alert('系统错误,请联系系统管理员');
+		   	  return false;
+		  }
+	    }); 
+}
+
+function grant(eno,uid)
+{
+	$("#grantUname").val(eno);
+	$.ajax({
+	      async: true,
+		  type: 'POST',
+		  url: '../user/queryRefRole?t=' + Math.random(),
+		  dataType: 'json',
+		  data:{"uid":uid},
+		  timeout: 60000,
+		  success:function(result){
+			  if (result.code && result.code=="1")
+			  {
+				  openGrantDiv(result.data,uid);
+			  }
+			  else
+			  {
+				  alert('查询用户权限失败,请联系系统管理员');
+			  }
+		  },error:function(XMLHttpRequest, textStatus, errorThrown) {
+		   	  alert('系统错误,请联系系统管理员');
+		   	  return false;
+		  }
+	    }); 
+}
+
+function openGrantDiv(roleList,uid)
+{
+	var len = roleList.length;
+	$("input[name='grantRole']:checked").each(function(idx,elemt){
+		$(this).attr("checked", false);
+	});
+	
+	
+	$("input[name='grantRole']").each(function(idx,elemt){
+		for (var i = 0; i< len; i++)
+		{
+			if (roleList[i].rid == $(this).val())
+			{
+				 $(this).attr("checked", true);
+			}
+		}
+	});
+	
+	layer.open({
+		  title: '帐号授权'
+		  ,type: 1
+		  ,content: $('#grantDiv')
+		  ,shade:false
+		  ,shadeClose:false
+		  ,btn: ['确认', '取消']
+		  ,yes: function(index, layero){
+			  var roleids = "";
+			  $("input[name='grantRole']:checked").each(function(idx,elemt){
+					roleids+=$(this).val()+",";
+				});
+			  
+			  if (roleids == "")
+			  {
+				  alert("请选择授权的角色");
+				  return;
+			  }
+			  grantSubmit(uid);
+			  layer.close(index); 
+		  }
+		  ,cancel: function(index, layero){ 
+			layer.close(index); 
+		  }});
+}
+
+function grantSubmit(uid)
+{
+	var roleids = "";
+	$("input[name='grantRole']:checked").each(function(idx,elemt){
+		roleids+=$(this).val()+",";
+	});
+	
+	$.ajax({
+	      async: true,
+		  type: 'POST',
+		  url: '../user/grant?t=' + Math.random(),
+		  dataType: 'json',
+		  data:{"uid":uid,"roleids":roleids},
+		  timeout: 60000,
+		  success:function(result){
+			  if (result.code && result.code=="1")
+			  {
+				  alert("授权成功");
+			  }
+			  else
+			  {
+				  alert('授权失败,请联系系统管理员');
+			  }
+		  },error:function(XMLHttpRequest, textStatus, errorThrown) {
+		   	  alert('系统错误,请联系系统管理员');
+		   	  return false;
+		  }
+	    }); 
+}
+
+function autoWidth()
+{
+	// 移动端设置body宽度
+	if (!isPC())
+	{
+		$("#empbody").css("min-with","1200px");
+	}
+}
+autoWidth();
+function replaceNull(value)
+{
+	if (value == undefined)
+	{
+		return '';
+	}
+	return value;
+}
+
+layui.use(['form', 'layedit', 'laydate'], function() {
+	var form = layui.form(),
+		layer = layui.layer,
+		layedit = layui.layedit,
+		laydate = layui.laydate;
+
+	// 设置开始时间不能大于结束时间
+	$("#beginDate").click(function(){
+		layui.laydate({elem: document.getElementById("beginDate"),max:$("#endDate").val()});
+	});
+	
+	// 设置结束时间的不能小于开始时间
+	$("#endDate").click(function(){
+		layui.laydate({elem: document.getElementById("endDate"),min:$("#beginDate").val()});
+	});
+
+	// 监听提交
+	form.on('submit(save)', function(data) {
+		 layer.msg(JSON.stringify(data.field));
+		return false;
+	});
+});
+
+//跳转到首页和末页
+function topagepro(topge) {
+	if( $("#totalPagePro").text()==0 ){
+		return;
+	}
+	if (topge == "tofirst") {
+		$("#pageNumberPro").html(1);
+		pageNumber = 1;
+	} else if (topge == "tolast") {
+		$("#pageNumberPro").html(parseInt($("#totalPagePro").text()));
+		pageNumber = totalPage;
+	}
+	
+	employee.queryEmp();
+}
+
+//上页 下页点击事件
+function changePagepro(obj) {
+	if( $("#totalPagePro").text()==0 ){
+		return;
+	}
+	var pageNumberPro = parseInt($("#pageNumberPro").text());
+	var totalPagePro = parseInt($("#totalPagePro").text());
+	if (obj == "next") {
+		if (pageNumberPro < totalPagePro) {
+			pageNumberPro = parseInt(pageNumberPro) + 1;
+		} else if (pageNumberPro < totalPagePro) {
+			pageNumberPro = 1;
+		}
+	} else if (obj == "last") {
+		if (pageNumberPro <= totalPagePro && pageNumberPro > 1) {
+			pageNumberPro = (pageNumberPro - 1);
+		}
+	}
+	$("#pageNumberPro").text(pageNumberPro);
+	pageNumber = pageNumberPro;
+	employee.queryEmp();
+}
+
+//跳转到某一页
+function tpagePro() {
+	var tpnum = $("#jpageNumberPro option:selected").text();
+	$("#pageNumberPro").text(tpnum);
+	pageNumber = tpnum;
+	employee.queryEmp();
+}
+
+//每页显示数
+function jpagePro() {
+	pageSize = $("#pageSizePro").val();
+	employee.queryEmp();
+}
